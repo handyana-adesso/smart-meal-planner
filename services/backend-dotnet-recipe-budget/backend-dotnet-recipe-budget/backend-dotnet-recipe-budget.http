@@ -1,6 +1,6 @@
-@backend_dotnet_recipe_and_budget_HostAddress = http://localhost:5019
+@backend_dotnet_recipe_and_budget_HostAddress = http://localhost:5001
 
-GET {{backend_dotnet_recipe_and_budget_HostAddress}}/weatherforecast/
+GET {{backend_dotnet_recipe_and_budget_HostAddress}}/health/
 Accept: application/json
 
 ###
