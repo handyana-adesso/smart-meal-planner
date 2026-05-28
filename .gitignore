@@ -1,38 +1,38 @@
 # ============================================================
 # .NET / C#
 # ============================================================
-backend-dotnet-recipe-budget/**/bin/
-backend-dotnet-recipe-budget/**/obj/
-backend-dotnet-recipe-budget/**/*.user
-backend-dotnet-recipe-budget/**/*.suo
-backend-dotnet-recipe-budget/**/.vs/
-backend-dotnet-recipe-budget/**/TestResults/
-backend-dotnet-recipe-budget/**/publish/
-backend-dotnet-recipe-budget/**/*.nupkg
-backend-dotnet-recipe-budget/**/*.snupkg
+services/backend-dotnet-recipe-budget/**/bin/
+services/backend-dotnet-recipe-budget/**/obj/
+services/backend-dotnet-recipe-budget/**/*.user
+services/backend-dotnet-recipe-budget/**/*.suo
+services/backend-dotnet-recipe-budget/**/.vs/
+services/backend-dotnet-recipe-budget/**/TestResults/
+services/backend-dotnet-recipe-budget/**/publish/
+services/backend-dotnet-recipe-budget/**/*.nupkg
+services/backend-dotnet-recipe-budget/**/*.snupkg
 
 # ============================================================
 # Java
 # ============================================================
 # Maven
-backend-java-grocery-meal-plan/target/
-backend-java-grocery-meal-plan/**/pom.xml.tag
-backend-java-grocery-meal-plan/**/pom.xml.releaseBackup
-backend-java-grocery-meal-plan/**/pom.xml.versionsBackup
+services/backend-java-grocery-meal-plan/target/
+services/backend-java-grocery-meal-plan/**/pom.xml.tag
+services/backend-java-grocery-meal-plan/**/pom.xml.releaseBackup
+services/backend-java-grocery-meal-plan/**/pom.xml.versionsBackup
 
 # Gradle
-backend-java-grocery-meal-plan/.gradle/
-backend-java-grocery-meal-plan/build/
-backend-java-grocery-meal-plan/**/build/
-backend-java-grocery-meal-plan/**/.gradle/
-backend-java-grocery-meal-plan/gradle/wrapper/gradle-wrapper.jar
+services/backend-java-grocery-meal-plan/.gradle/
+services/backend-java-grocery-meal-plan/build/
+services/backend-java-grocery-meal-plan/**/build/
+services/backend-java-grocery-meal-plan/**/.gradle/
+services/backend-java-grocery-meal-plan/gradle/wrapper/gradle-wrapper.jar
 
 # IDE
-backend-java-grocery-meal-plan/**/.idea/
-backend-java-grocery-meal-plan/**/*.iml
-backend-java-grocery-meal-plan/**/*.ipr
-backend-java-grocery-meal-plan/**/*.iws
-backend-java-grocery-meal-plan/**/out/
+services/backend-java-grocery-meal-plan/**/.idea/
+services/backend-java-grocery-meal-plan/**/*.iml
+services/backend-java-grocery-meal-plan/**/*.ipr
+services/backend-java-grocery-meal-plan/**/*.iws
+services/backend-java-grocery-meal-plan/**/out/
 
 # ============================================================
 # Angular / Node
