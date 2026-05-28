@@ -1,0 +1,93 @@
+# ============================================================
+# .NET / C#
+# ============================================================
+backend-dotnet-recipe-and-budget/**/bin/
+backend-dotnet-recipe-and-budget/**/obj/
+backend-dotnet-recipe-and-budget/**/*.user
+backend-dotnet-recipe-and-budget/**/*.suo
+backend-dotnet-recipe-and-budget/**/.vs/
+backend-dotnet-recipe-and-budget/**/TestResults/
+backend-dotnet-recipe-and-budget/**/publish/
+backend-dotnet-recipe-and-budget/**/*.nupkg
+backend-dotnet-recipe-and-budget/**/*.snupkg
+
+# ============================================================
+# Java
+# ============================================================
+# Maven
+backend-java-grocery-and-meal-plan/target/
+backend-java-grocery-and-meal-plan/**/pom.xml.tag
+backend-java-grocery-and-meal-plan/**/pom.xml.releaseBackup
+backend-java-grocery-and-meal-plan/**/pom.xml.versionsBackup
+
+# Gradle
+backend-java-grocery-and-meal-plan/.gradle/
+backend-java-grocery-and-meal-plan/build/
+backend-java-grocery-and-meal-plan/**/build/
+backend-java-grocery-and-meal-plan/**/.gradle/
+backend-java-grocery-and-meal-plan/gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+backend-java-grocery-and-meal-plan/**/.idea/
+backend-java-grocery-and-meal-plan/**/*.iml
+backend-java-grocery-and-meal-plan/**/*.ipr
+backend-java-grocery-and-meal-plan/**/*.iws
+backend-java-grocery-and-meal-plan/**/out/
+
+# ============================================================
+# Angular / Node
+# ============================================================
+frontend-angular-dashboard/node_modules/
+frontend-angular-dashboard/dist/
+frontend-angular-dashboard/.angular/
+frontend-angular-dashboard/.sass-cache/
+frontend-angular-dashboard/connect.lock
+frontend-angular-dashboard/coverage/
+frontend-angular-dashboard/*.js.map
+frontend-angular-dashboard/.npmrc
+
+# ============================================================
+# Docker
+# ============================================================
+**/docker-compose.override.yml
+
+# ============================================================
+# Environment & secrets — NEVER commit these
+# ============================================================
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+
+# ============================================================
+# OS & editors
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains (IntelliJ, Rider)
+.idea/
+*.iml
+
+# Visual Studio
+.vs/
+*.rsuser
+
+# ============================================================
+# Logs & temp files
+# ============================================================
+logs/
+*.log
+*.tmp
+*.temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
