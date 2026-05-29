@@ -1,4 +1,5 @@
-﻿using RecipeBudgetService.DTOs;
+﻿using RecipeBudgetService.Common.Filters;
+using RecipeBudgetService.DTOs;
 using RecipeBudgetService.Services;
 
 namespace RecipeBudgetService.Endpoints;
@@ -16,10 +17,12 @@ public static class RecipeEndpoints
                 return Task.CompletedTask;
             });
 
-        group.MapPost("/recipes", Create);
+        group.MapPost("/recipes", Create)
+            .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
         group.MapGet("/recipes", GetAll);
         group.MapGet("/recipes/{id:guid}", GetById);
-        group.MapPut("/recipes/{id:guid}", Update);
+        group.MapPut("/recipes/{id:guid}", Update)
+            .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
         group.MapDelete("/recipes/{id:guid}", Delete);
     }
 
