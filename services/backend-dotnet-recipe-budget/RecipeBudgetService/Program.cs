@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using RecipeBudgetService.Common.Middleware;
 using RecipeBudgetService.Common.Validators;
 using RecipeBudgetService.Data;
 using RecipeBudgetService.Endpoints;
@@ -24,7 +25,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
 // Add health checks
 builder.Services.AddHealthChecks();
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
