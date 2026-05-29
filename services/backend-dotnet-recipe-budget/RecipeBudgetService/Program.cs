@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeBudgetService.Data;
+using RecipeBudgetService.Endpoints;
 using RecipeBudgetService.Repositories;
 using RecipeBudgetService.Services;
 
@@ -36,5 +37,7 @@ using (var scope = app.Services.CreateScope())
 
 // Map health check endpoint
 app.MapHealthChecks("/health");
+
+app.MapRecipeEndpoints();
 
 app.Run();
