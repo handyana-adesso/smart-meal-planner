@@ -1,4 +1,6 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using RecipeBudgetService.Common.Validators;
 using RecipeBudgetService.Data;
 using RecipeBudgetService.Endpoints;
 using RecipeBudgetService.Repositories;
@@ -15,6 +17,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+
+// Registers all validators in the assembly automatically
+builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
 
 // Add health checks
 builder.Services.AddHealthChecks();
