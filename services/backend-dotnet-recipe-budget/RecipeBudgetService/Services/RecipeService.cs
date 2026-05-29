@@ -15,12 +15,20 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
 
     public async Task<RecipeResponse> CreateAsync(RecipeRequest request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(request);
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
+        GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
+
+        var created = await _repository.CreateAsync(request.ToEntity(), cancellationToken);
+        return created.ToResponse();
     }
 
-    public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        GuardExtensions.ThrowIfGuidEmpty(id);
+
+        return await _repository.DeleteAsync(id, cancellationToken);
     }
 
     public async Task<IEnumerable<RecipeResponse>> GetAllAsync(CancellationToken cancellationToken)
@@ -39,8 +47,15 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
         return recipe?.ToResponse();
     }
 
-    public Task<RecipeResponse?> UpdateAsync(Guid id, RecipeRequest request, CancellationToken cancellationToken)
+    public async Task<RecipeResponse?> UpdateAsync(Guid id, RecipeRequest request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        GuardExtensions.ThrowIfGuidEmpty(id);
+        ArgumentNullException.ThrowIfNull(request);
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
+        GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
+
+        var updated = await _repository.UpdateAsync(request.ToEntity(id), cancellationToken);
+        return updated?.ToResponse();
     }
 }
