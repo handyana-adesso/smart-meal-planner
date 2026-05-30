@@ -11,7 +11,9 @@ public static class IngredientMapper
             ingredient.Id,
             ingredient.Name,
             ingredient.Quantity,
-            ingredient.Unit);
+            ingredient.Unit,
+            ingredient.PricePerUnit,
+            ingredient.Quantity * ingredient.PricePerUnit);
     }
 
     public static IEnumerable<IngredientResponse> ToResponses(this IEnumerable<Ingredient> ingredients) 
@@ -24,7 +26,8 @@ public static class IngredientMapper
             Id = id ?? Guid.NewGuid(),
             Name = request.Name,
             Quantity = request.Quantity,
-            Unit = request.Unit
+            Unit = request.Unit,
+            PricePerUnit = request.PricePerUnit
         };
     }
 

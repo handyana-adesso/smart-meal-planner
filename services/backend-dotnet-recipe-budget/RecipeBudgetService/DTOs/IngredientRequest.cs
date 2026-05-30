@@ -3,4 +3,5 @@
 public record IngredientRequest(
     string Name,
     decimal Quantity,
-    string Unit);
+    string Unit,
+    decimal PricePerUnit);
