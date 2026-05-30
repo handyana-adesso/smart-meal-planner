@@ -38,8 +38,24 @@ public class RecipeRepositoryTests : IAsyncLifetime
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Pasta", 
+                Description = "A delicious pasta", 
+                Servings = 1, 
+                Ingredients = new List<Ingredient>
+                {
+                    new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+                }
+            },
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Pizza", 
+                Description = "Pizza margharita", 
+                Servings = 2
+            }
         };
 
         _dbContext.Recipes.AddRange(recipes);
@@ -62,7 +78,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -85,7 +104,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -106,7 +128,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
 
         // Act
@@ -128,7 +153,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -139,7 +167,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Updated Pasta",
             Description = "An updated delicious pasta",
             Servings = 2,
-            EstimatedCost = 12.00m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
 
         // Act
@@ -161,7 +192,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Updated Pasta",
             Description = "An updated delicious pasta",
             Servings = 2,
-            EstimatedCost = 12.00m
+            Ingredients = new List<Ingredient>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+            }
         };
 
         // Act
@@ -181,7 +215,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -205,7 +239,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -228,7 +262,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
@@ -250,7 +284,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
-            EstimatedCost = 10.50m
+            Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();

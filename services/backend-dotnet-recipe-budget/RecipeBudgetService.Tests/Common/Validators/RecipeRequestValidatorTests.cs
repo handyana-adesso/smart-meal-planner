@@ -16,7 +16,7 @@ public class RecipeRequestValidatorTests
             "Pasta",
             "A delicious pasta",
             1,
-            10.50m
+            new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) }
         );
         // Act
         var result = _validator.Validate(request);
@@ -36,7 +36,7 @@ public class RecipeRequestValidatorTests
             name!,
             "A delicious pasta",
             1,
-            10.50m
+            new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) }
         );
 
         // Act
@@ -55,7 +55,7 @@ public class RecipeRequestValidatorTests
             "Pasta",
             "A delicious pasta",
             -1,
-            10.50m
+            new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) }
         );
 
         // Act
@@ -67,25 +67,6 @@ public class RecipeRequestValidatorTests
     }
 
     [Fact]
-    public void Validate_WhenEstimatedCostIsNegative_ShouldHaveErrors()
-    {
-        // Arrange
-        var request = new RecipeRequest(
-            "Pasta",
-            "A delicious pasta",
-            1,
-            -5.00m
-        );
-
-        // Act
-        var result = _validator.Validate(request);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(RecipeRequest.EstimatedCost));
-    }
-
-    [Fact]
     public void Validate_WhenNameExceedsMaxLength_ShouldHaveErrors()
     {
         // Arrange
@@ -94,7 +75,7 @@ public class RecipeRequestValidatorTests
             longName,
             "A delicious pasta",
             1,
-            10.50m
+            new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) }
         );
 
         // Act

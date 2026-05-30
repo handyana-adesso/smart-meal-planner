@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using RecipeBudgetService.Common.Exceptions;
 using RecipeBudgetService.DTOs;
 using RecipeBudgetService.Entities;
 using RecipeBudgetService.Repositories;
@@ -49,8 +50,8 @@ public class RecipeServiceTests
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
             .Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -86,8 +87,8 @@ public class RecipeServiceTests
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
             .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -99,27 +100,27 @@ public class RecipeServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be(recipes[0].Name);
-        result.EstimatedCost.Should().Be(recipes[0].EstimatedCost);
+        result.EstimatedCost.Should().Be(recipes[0].Ingredients.Sum(i => i.Quantity * i.PricePerUnit));
     }
 
     [Fact]
-    public async Task GetByIdAsync_WhenRecipeDoesNotExists_ShouldReturnNull()
+    public async Task GetByIdAsync_WhenRecipeDoesNotExists_ShouldThrowNotFoundException()
     {
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
             .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == id));
 
         // Act
-        var result = await _recipeService.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
@@ -138,7 +139,7 @@ public class RecipeServiceTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new RecipeRequest("Pasta", "A delicious pasta", 1, 10.50m);
+        var request = new RecipeRequest("Pasta", "A delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
         _repositoryMock
             .Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Recipe recipe, CancellationToken cancellationToken) => new Recipe()
@@ -147,7 +148,7 @@ public class RecipeServiceTests
                 Name = recipe.Name,
                 Description = recipe.Description,
                 Servings = recipe.Servings,
-                EstimatedCost = recipe.EstimatedCost
+                Ingredients = recipe.Ingredients
             });
 
         // Act
@@ -158,7 +159,7 @@ public class RecipeServiceTests
         result.Name.Should().Be(request.Name);
         result.Description.Should().Be(request.Description);
         result.Servings.Should().Be(request.Servings);
-        result.EstimatedCost.Should().Be(request.EstimatedCost);
+        result.Ingredients.Count.Should().Be(request.Ingredients?.Count ?? 0);
     }
 
     [Fact]
@@ -179,7 +180,7 @@ public class RecipeServiceTests
     public async Task CreateAsync_WhenNameIsNullOrWhiteSpace_ShouldThrowArgumentException(string? name)
     {
         // Arrange
-        var request = new RecipeRequest(name!, "A delicious pasta", 1, 10.50m);
+        var request = new RecipeRequest(name!, "A delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
         // Act
         Func<Task> act = async () => await _recipeService.CreateAsync(request, CancellationToken.None);
         // Assert
@@ -188,29 +189,15 @@ public class RecipeServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenEstimatedCostIsNegative_ShouldThrowArgumentException()
-    {
-        // Arrange
-        var request = new RecipeRequest("Pasta", "A delicious pasta", 1, -10.50m);
-
-        // Act
-        Func<Task> act = async () => await _recipeService.CreateAsync(request, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>()
-            .WithParameterName("request.EstimatedCost");
-    }
-
-    [Fact]
     public async Task UpdateAsync_WhenRecipeExists_ShouldReturnUpdated()
     {
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
-        var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, 11.50m);
+        var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
         _repositoryMock
             .Setup(repo => repo.UpdateAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Recipe recipe, CancellationToken cancellationToken) =>
@@ -221,7 +208,7 @@ public class RecipeServiceTests
                     found.Name = recipe.Name;
                     found.Description = recipe.Description;
                     found.Servings = recipe.Servings;
-                    found.EstimatedCost = recipe.EstimatedCost;
+                    found.Ingredients = recipe.Ingredients;
                 }
                 return found;
             });
@@ -234,7 +221,7 @@ public class RecipeServiceTests
         result.Name.Should().Be(request.Name);
         result.Description.Should().Be(request.Description);
         result.Servings.Should().Be(request.Servings);
-        result.EstimatedCost.Should().Be(request.EstimatedCost);
+        result.Ingredients.Count.Should().Be(request.Ingredients?.Count ?? 0);
     }
 
     [Fact]
@@ -250,7 +237,7 @@ public class RecipeServiceTests
                 Name = "Pasta",
                 Description = "A delicious pasta",
                 Servings = 1,
-                EstimatedCost = 10.50m
+                Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
             }
         };
         _repositoryMock
@@ -268,7 +255,7 @@ public class RecipeServiceTests
     public async Task UpdateAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
         // Arrange
-        var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, 11.50m);
+        var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
 
         // Act
         Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.Empty, request, CancellationToken.None);
@@ -296,7 +283,7 @@ public class RecipeServiceTests
     public async Task UpdateAsync_WhenNameIsNullOrWhiteSpace_ShouldThrowArgumentException(string? name)
     {
         // Arrange
-        var request = new RecipeRequest(name!, "An extra delicious pasta", 1, 11.50m);
+        var request = new RecipeRequest(name!, "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
 
         // Act
         Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, CancellationToken.None);
@@ -312,8 +299,8 @@ public class RecipeServiceTests
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
             .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -332,8 +319,8 @@ public class RecipeServiceTests
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, EstimatedCost = 10.50m },
-            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, EstimatedCost = 15.00m }
+            new() { Id = Guid.NewGuid(), Name = "Pasta", Description = "A delicious pasta", Servings = 1, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } } },
+            new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
             .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
