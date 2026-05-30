@@ -20,6 +20,14 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
         GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
 
+        var exists = await _repository
+            .ExistsByNameAsync(request.Name, cancellationToken);
+
+        if (exists)
+        {
+            throw new ConflictException($"A recipe with the name '{request.Name}' already exists.");
+        }
+
         var created = await _repository.CreateAsync(request.ToEntity(), cancellationToken);
         return created.ToResponse();
     }
@@ -44,7 +52,10 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
         GuardExtensions.ThrowIfGuidEmpty(id);
 
         var recipe = await _repository.GetByIdAsync(id, cancellationToken);
-        return recipe?.ToResponse();
+
+        return recipe is null 
+            ? throw new NotFoundException($"Recipe with ID {id} not found.") 
+            : recipe.ToResponse();
     }
 
     public async Task<RecipeResponse?> UpdateAsync(Guid id, RecipeRequest request, CancellationToken cancellationToken)
@@ -54,6 +65,12 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
 
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
         GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
+
+        var exists = await _repository.ExistsByNameAsync(request.Name, cancellationToken);
+        if (exists)
+        {
+            throw new ConflictException($"A recipe with the name '{request.Name}' already exists.");
+        }
 
         var updated = await _repository.UpdateAsync(request.ToEntity(id), cancellationToken);
         return updated?.ToResponse();
