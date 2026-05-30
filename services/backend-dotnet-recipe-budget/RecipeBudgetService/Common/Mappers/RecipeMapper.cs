@@ -11,7 +11,8 @@ public static class RecipeMapper
             recipe.Name, 
             recipe.Description, 
             recipe.Servings, 
-            recipe.EstimatedCost,
+            recipe.Ingredients.Sum(i => i.Cost * i.Quantity),
+            recipe.CreatedAt,
             recipe.Ingredients.ToResponses().ToList());
 
     public static Recipe ToEntity(this RecipeRequest request, Guid? id = null) =>
@@ -21,7 +22,6 @@ public static class RecipeMapper
             Name = request.Name, 
             Description = request.Description ?? string.Empty, 
             Servings = request.Servings, 
-            EstimatedCost = request.EstimatedCost,
             Ingredients = request.Ingredients?
                 .ToEntities()
                 .ToList() ?? new List<Ingredient>()

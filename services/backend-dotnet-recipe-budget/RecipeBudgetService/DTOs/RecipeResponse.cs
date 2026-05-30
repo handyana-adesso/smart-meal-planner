@@ -6,4 +6,5 @@ public record RecipeResponse(
     string Description,
     int Servings,
     decimal EstimatedCost,
+    DateTime CreatedAt,
     List<IngredientResponse> Ingredients);

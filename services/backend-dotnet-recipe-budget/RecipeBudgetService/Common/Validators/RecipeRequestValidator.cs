@@ -13,9 +13,7 @@ public class RecipeRequestValidator : AbstractValidator<RecipeRequest>
         RuleFor(r => r.Description)
             .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
         RuleFor(r => r.Servings)
-            .GreaterThanOrEqualTo(0).WithMessage("Servings must be a non-negative integer.");
-        RuleFor(r => r.EstimatedCost)
-            .GreaterThanOrEqualTo(0).WithMessage("Estimated cost must be a non-negative decimal.");
+            .GreaterThan(0).WithMessage("Servings must be at least 1.");
         RuleForEach(r => r.Ingredients)
             .SetValidator(new IngredientRequestValidator());
     }
