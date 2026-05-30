@@ -9,4 +9,5 @@ public interface IRecipeRepository
     Task<Recipe> CreateAsync(Recipe recipe, CancellationToken cancellationToken);
     Task<Recipe?> UpdateAsync(Recipe recipe, CancellationToken cancellationToken);
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
+    Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
 }

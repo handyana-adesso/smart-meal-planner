@@ -70,4 +70,11 @@ internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
 
         return existing;
     }
+
+    public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+    {
+        return await dbContext
+            .Recipes
+            .AnyAsync(r => r.Name.ToLower() == name.ToLower(), cancellationToken);
+    }
 }
