@@ -41,18 +41,18 @@ public static class RecipeEndpoints
     static async Task<IResult> GetById(IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
     {
         var recipe = await recipeService.GetByIdAsync(id, cancellationToken);
-        return recipe is null ? Results.NotFound() : Results.Ok(recipe);
+        return Results.Ok(recipe);
     }
 
     static async Task<IResult> Update(IRecipeService recipeService, Guid id, RecipeRequest request, CancellationToken cancellationToken)
     {
         var recipe = await recipeService.UpdateAsync(id, request, cancellationToken);
-        return recipe is null ? Results.NotFound() : Results.Ok(recipe);
+        return Results.Ok(recipe);
     }
 
     static async Task<IResult> Delete(IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await recipeService.DeleteAsync(id, cancellationToken);
-        return deleted ? Results.NoContent() : Results.NotFound();
+        await recipeService.DeleteAsync(id, cancellationToken);
+        return Results.NoContent();
     }
 }
