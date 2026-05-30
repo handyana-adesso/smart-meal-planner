@@ -6,7 +6,13 @@ namespace RecipeBudgetService.Common.Mappers;
 public static class RecipeMapper
 {
     public static RecipeResponse ToResponse(this Recipe recipe) =>
-        new(recipe.Id, recipe.Name, recipe.Description, recipe.Servings, recipe.EstimatedCost);
+        new(
+            recipe.Id, 
+            recipe.Name, 
+            recipe.Description, 
+            recipe.Servings, 
+            recipe.EstimatedCost,
+            recipe.Ingredients.ToResponses().ToList());
 
     public static Recipe ToEntity(this RecipeRequest request, Guid? id = null) =>
         new() 
@@ -15,6 +21,9 @@ public static class RecipeMapper
             Name = request.Name, 
             Description = request.Description ?? string.Empty, 
             Servings = request.Servings, 
-            EstimatedCost = request.EstimatedCost 
+            EstimatedCost = request.EstimatedCost,
+            Ingredients = request.Ingredients?
+                .ToEntities()
+                .ToList() ?? new List<Ingredient>()
         };
 }

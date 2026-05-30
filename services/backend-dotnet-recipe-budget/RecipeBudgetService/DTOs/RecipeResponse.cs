@@ -5,4 +5,5 @@ public record RecipeResponse(
     string Name,
     string Description,
     int Servings,
-    decimal EstimatedCost);
+    decimal EstimatedCost,
+    List<IngredientResponse> Ingredients);

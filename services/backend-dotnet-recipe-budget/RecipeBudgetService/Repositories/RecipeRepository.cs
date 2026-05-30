@@ -39,6 +39,7 @@ internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
     {
         return await dbContext
             .Recipes
+            .Include(r => r.Ingredients)
             .ToListAsync(cancellationToken);
     }
 
@@ -46,6 +47,7 @@ internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
     {
         return await dbContext
             .Recipes
+            .Include(r => r.Ingredients)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
@@ -64,7 +66,14 @@ internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
         existing.Description = recipe.Description;
         existing.Servings = recipe.Servings;
         existing.EstimatedCost = recipe.EstimatedCost;
-        
+
+        // Replace Ingredients
+        existing.Ingredients.Clear();
+        foreach (var ingredient in recipe.Ingredients)
+        {
+            existing.Ingredients.Add(ingredient);
+        }
+
         await dbContext
             .SaveChangesAsync(cancellationToken);
 

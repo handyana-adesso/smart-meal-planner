@@ -16,5 +16,7 @@ public class RecipeRequestValidator : AbstractValidator<RecipeRequest>
             .GreaterThanOrEqualTo(0).WithMessage("Servings must be a non-negative integer.");
         RuleFor(r => r.EstimatedCost)
             .GreaterThanOrEqualTo(0).WithMessage("Estimated cost must be a non-negative decimal.");
+        RuleForEach(r => r.Ingredients)
+            .SetValidator(new IngredientRequestValidator());
     }
 }
