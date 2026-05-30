@@ -1,4 +1,5 @@
-﻿using RecipeBudgetService.Common.Extensions;
+﻿using RecipeBudgetService.Common.Exceptions;
+using RecipeBudgetService.Common.Extensions;
 using RecipeBudgetService.Common.Mappers;
 using RecipeBudgetService.DTOs;
 using RecipeBudgetService.Repositories;
