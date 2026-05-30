@@ -65,7 +65,6 @@ internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
         existing.Name = recipe.Name;
         existing.Description = recipe.Description;
         existing.Servings = recipe.Servings;
-        existing.EstimatedCost = recipe.EstimatedCost;
 
         // Replace Ingredients
         existing.Ingredients.Clear();

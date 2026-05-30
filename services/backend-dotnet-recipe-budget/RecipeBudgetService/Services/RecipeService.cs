@@ -17,9 +17,7 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
     public async Task<RecipeResponse> CreateAsync(RecipeRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
-        GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
 
         var exists = await _repository
             .ExistsByNameAsync(request.Name, cancellationToken);
@@ -63,9 +61,7 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
     {
         GuardExtensions.ThrowIfGuidEmpty(id);
         ArgumentNullException.ThrowIfNull(request);
-
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
-        GuardExtensions.ThrowIfDecimalNegative(request.EstimatedCost);
 
         var exists = await _repository.ExistsByNameAsync(request.Name, cancellationToken);
         if (exists)
