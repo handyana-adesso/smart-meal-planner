@@ -11,7 +11,7 @@ public static class RecipeMapper
             recipe.Name, 
             recipe.Description, 
             recipe.Servings, 
-            recipe.Ingredients.Sum(i => i.Cost * i.Quantity),
+            recipe.Ingredients.Sum(i => i.PricePerUnit * i.Quantity),
             recipe.CreatedAt,
             recipe.Ingredients.ToResponses().ToList());
 
