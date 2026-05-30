@@ -217,4 +217,48 @@ public class RecipeRepositoryTests : IAsyncLifetime
         result.Should().BeFalse();
         _dbContext.Recipes.Should().HaveCount(1);
     }
+
+    [Fact]
+    public async Task ExistsByNameAsync_WhenRecipeExists_ShouldReturnTrue()
+    {
+        // Arrange
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            EstimatedCost = 10.50m
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.ExistsByNameAsync(recipe.Name, CancellationToken.None);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExistsByNameAsync_WhenRecipeDoesNotExists_ShouldReturnFalse()
+    {
+        // Arrange
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            EstimatedCost = 10.50m
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.ExistsByNameAsync("NonExistingRecipe", CancellationToken.None);
+        
+        // Assert
+        result.Should().BeFalse();
+    }
 }
