@@ -50,5 +50,6 @@ using (var scope = app.Services.CreateScope())
 app.MapHealthChecks("/health");
 
 app.MapRecipeEndpoints();
+app.MapIngredientEndpoints();
 
 app.Run();
