@@ -5,7 +5,7 @@ using Moq;
 using RecipeBudgetService.Common.Exceptions;
 using RecipeBudgetService.Common.Middleware;
 
-namespace RecipeBudgetService.Tests.Common.Middleware;
+namespace RecipeBudgetService.Tests.UnitTests.Common.Middleware;
 
 public class GlobalExceptionHandlerTests
 {

@@ -2,7 +2,7 @@
 using RecipeBudgetService.Common.Validators;
 using RecipeBudgetService.DTOs;
 
-namespace RecipeBudgetService.Tests.Common.Validators;
+namespace RecipeBudgetService.Tests.UnitTests.Common.Validators;
 
 public class RecipeRequestValidatorTests
 {

@@ -6,7 +6,7 @@ using RecipeBudgetService.Entities;
 using RecipeBudgetService.Repositories;
 using RecipeBudgetService.Services;
 
-namespace RecipeBudgetService.Tests.Services;
+namespace RecipeBudgetService.Tests.UnitTests.Services;
 
 public class RecipeServiceTests
 {
@@ -225,7 +225,7 @@ public class RecipeServiceTests
     }
 
     [Fact]
-    public async Task UpdateAsync_WhenRecipeDoesNotExist_ShouldReturnNull()
+    public async Task UpdateAsync_WhenRecipeDoesNotExist_ShouldThrowNotFoundException()
     {
         // Arrange
         var request = new RecipeRequest("Ghost");
@@ -245,10 +245,10 @@ public class RecipeServiceTests
             .ReturnsAsync((Recipe recipe, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == recipe.Id));
 
         // Act
-        var result = await _recipeService.UpdateAsync(Guid.NewGuid(), request, CancellationToken.None);
+        var act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
