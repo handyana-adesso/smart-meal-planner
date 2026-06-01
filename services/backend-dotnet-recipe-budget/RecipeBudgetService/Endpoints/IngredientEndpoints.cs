@@ -1,4 +1,5 @@
-﻿using RecipeBudgetService.Common.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using RecipeBudgetService.Common.Filters;
 using RecipeBudgetService.DTOs;
 using RecipeBudgetService.Services;
 
@@ -24,8 +25,8 @@ public static class IngredientEndpoints
 
     static async Task<IResult> CreateAsync(
         Guid recipeId, 
-        IngredientRequest request, 
-        IIngredientService ingredientService, 
+        IngredientRequest request,
+        [FromServices] IIngredientService ingredientService, 
         CancellationToken cancellationToken)
     {
         var result = await ingredientService.CreateAsync(recipeId, request, cancellationToken);
@@ -35,7 +36,7 @@ public static class IngredientEndpoints
     static async Task<IResult> DeleteAsync(
         Guid recipeId,
         Guid ingredientId,
-        IIngredientService ingredientService,
+        [FromServices] IIngredientService ingredientService,
         CancellationToken cancellationToken)
     {
         await ingredientService.DeleteAsync(recipeId, ingredientId, cancellationToken);
