@@ -6,6 +6,7 @@ using RecipeBudgetService.Data;
 using RecipeBudgetService.Endpoints;
 using RecipeBudgetService.Repositories;
 using RecipeBudgetService.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,11 +18,12 @@ if (!builder.Environment.IsEnvironment("Test"))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-}
-    
+}    
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
 
 // Registers all validators in the assembly automatically
 builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
