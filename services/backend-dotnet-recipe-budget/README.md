@@ -77,7 +77,7 @@ sequenceDiagram
 - **xUnit + FluentAssertions + Moq** - testing
 - **Docker** - containerization
 
---
+---
 
 ## Project Structure
 
