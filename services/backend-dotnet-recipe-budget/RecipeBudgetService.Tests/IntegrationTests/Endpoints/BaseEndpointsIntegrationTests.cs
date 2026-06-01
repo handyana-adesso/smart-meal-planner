@@ -12,7 +12,7 @@ public abstract class BaseEndpointsIntegrationTests : IAsyncLifetime
     protected TestWebApplicationFactory Factory = null!;
     protected HttpClient Client = null!;
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync()
     {
         Factory = new TestWebApplicationFactory();
         Client = Factory.CreateClient();

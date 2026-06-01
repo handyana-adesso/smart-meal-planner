@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using RecipeBudgetService.Data;
 using RecipeBudgetService.DTOs;
 using RecipeBudgetService.Entities;
 using System.Net;
@@ -148,5 +150,222 @@ public class RecipeEndpointsTests : BaseEndpointsIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_WhenNoRecipes_ShouldReturn200WithEmptyList()
+    {
+        // Act
+        var response = await Client.GetAsync("/api/recipes");
+        var body = await response.Content.ReadFromJsonAsync<List<RecipeResponse>>();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_WhenRecipeExist_ShouldReturnAll()
+    {
+        // Arrange
+        await SeedRecipeAsync();
+        await SeedRecipeAsync("Pizza", "An original pizza recipe", 1);
+
+        // Act
+        var response = await Client.GetAsync("/api/recipes");
+        var body = await response.Content.ReadFromJsonAsync<List<RecipeResponse>>();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_ShouldIncludeEstimatedCost()
+    {
+        // Arrange
+        await SeedRecipeAsync(ingredients: [
+            new Ingredient { Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m },
+            new Ingredient { Name = "Eggs", Quantity = 3, Unit = "pcs", PricePerUnit = 0.50m }
+        ]);
+
+        // Act
+        var response = await Client.GetAsync("/api/recipes");
+        var body = await response.Content.ReadFromJsonAsync<List<RecipeResponse>>();
+
+        // Assert
+        body!.First().EstimatedCost.Should().Be(3.50m);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipesById_WhenRecipeExists_ShouldReturn200()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync();
+
+        // Act
+        var response = await Client.GetAsync($"/api/recipes/{recipe.Id}");
+        var body = await response.Content.ReadFromJsonAsync<RecipeResponse>();
+
+        // Arrange
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body!.Id.Should().Be(recipe.Id);
+        body.Name.Should().Be("Pasta");
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipesById_WhenRecipeDoesNotExists_ShouldReturn404()
+    {
+        // Act
+        var response = await Client.GetAsync($"/api/recipes/{Guid.NewGuid()}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipesById_WhenIdIsInvalid_ShouldReturn404()
+    {
+        // Act
+        var response = await Client.GetAsync("/api/recipes/not-a-guid");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipesById_ShouldIncludeIngredients()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync(ingredients: [
+            new Ingredient { Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m },
+            new Ingredient { Name = "Eggs", Quantity = 3, Unit = "pcs", PricePerUnit = 0.50m }
+        ]);
+
+        // Act
+        var response = await Client.GetAsync($"/api/recipes/{recipe.Id}");
+        var body = await response.Content.ReadFromJsonAsync<RecipeResponse>();
+
+        // Assert
+        body!.Ingredients.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task PUT_ApiRecipesById_WithValidRequest_ShouldReturn200()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync();
+
+        // Act
+        var response = await Client.PutAsJsonAsync($"/api/recipes/{recipe.Id}",
+            new RecipeRequest("Updated Pasta", "A more delicious pasta recipe", 4));
+        var body = await response.Content.ReadFromJsonAsync<RecipeResponse>();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body!.Name.Should().Be("Updated Pasta");
+        body.Servings.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task PUT_ApiRecipesById_WhenRecipeDoesNotExits_ShouldReturn404()
+    {
+        // Act
+        var response = await Client.PutAsJsonAsync($"/api/recipes/{Guid.NewGuid()}",
+            new RecipeRequest("Updated Pasta", "A more delicious pasta recipe", 4));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task PUT_ApiRecipesById_WhenNameAlreadyExists_ShouldReturn409()
+    {
+        // Arrange — seed two recipes
+        var recipe = await SeedRecipeAsync();
+        await SeedRecipeAsync("Pizza", "An original pizza recipe", 1);
+
+        // Act — try to rename Pasta to Pizza
+        var response = await Client.PutAsJsonAsync($"/api/recipes/{recipe.Id}",
+            new RecipeRequest("Pizza", "A pasta pizza recipe", 2));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task PUT_ApiRecipesById_WhenNameIsEmpty_ShouldReturn400()
+    {
+        var recipe = await SeedRecipeAsync();
+
+        var response = await Client.PutAsJsonAsync($"/api/recipes/{recipe.Id}",
+            new RecipeRequest("", "An empty recipe", 2));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task PUT_ApiRecipesById_WhenServingsIsZero_ShouldReturn400()
+    {
+        var recipe = await SeedRecipeAsync();
+
+        var response = await Client.PutAsJsonAsync($"/api/recipes/{recipe.Id}",
+            new RecipeRequest("Pasta", "A delicious pasta recipe", 0));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task DELETE_ApiRecipesById_WhenRecipeExists_ShouldReturn204()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync();
+
+        // Act
+        var response = await Client.DeleteAsync($"/api/recipes/{recipe.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DELETE_ApiRecipesById_WhenRecipeDoesNotExist_ShouldReturn204()
+    {
+        // Act
+        var response = await Client.DeleteAsync($"/api/recipes/{Guid.NewGuid()}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DELETE_ApiRecipesById_ShouldRemoveFromDatabase()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync();
+
+        // Act
+        await Client.DeleteAsync($"/api/recipes/{recipe.Id}");
+
+        // Assert — verify gone from db
+        var getResponse = await Client.GetAsync($"/api/recipes/{recipe.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DELETE_ApiRecipesById_ShouldCascadeDeleteIngredients()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync("Pasta", "A delicious pasta", 2, [
+            new() { Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
+        ]);
+
+        // Act
+        await Client.DeleteAsync($"/api/recipes/{recipe.Id}");
+
+        // Assert — verify ingredients gone too
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Ingredients.Should().BeEmpty();
     }
 }
