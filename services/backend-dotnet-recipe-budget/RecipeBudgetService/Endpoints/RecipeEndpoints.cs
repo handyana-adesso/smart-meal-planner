@@ -17,13 +17,13 @@ public static class RecipeEndpoints
                 return Task.CompletedTask;
             });
 
-        group.MapPost("/recipes", Create)
+        group.MapPost("/", Create)
             .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
-        group.MapGet("/recipes", GetAll);
-        group.MapGet("/recipes/{id:guid}", GetById);
-        group.MapPut("/recipes/{id:guid}", Update)
+        group.MapGet("/", GetAll);
+        group.MapGet("/{id:guid}", GetById);
+        group.MapPut("/{id:guid}", Update)
             .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
-        group.MapDelete("/recipes/{id:guid}", Delete);
+        group.MapDelete("/{id:guid}", Delete);
     }
 
     static async Task<IResult> Create(IRecipeService recipeService, RecipeRequest request, CancellationToken cancellationToken)
