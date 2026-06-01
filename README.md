@@ -38,8 +38,8 @@ flowchart TD
     PG2[(PostgreSQL\nGrocery DB)]
   end
 
-  FE -->|REST| NET
-  FE -->|REST| JAVA
+  FE -->|REST| NET_EP
+  FE -->|REST| JAVA_EP
   NET_RP --> PG1
   JAVA_RP --> PG2
 ```
