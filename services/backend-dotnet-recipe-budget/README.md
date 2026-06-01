@@ -18,7 +18,7 @@ flowchart TD
             EF[ValidationFilter]
             EP[Endpoints\nRecipeEndpoints\nIngredientEndpoints]
             SV[Services\nRecipeService\nIngredientService]
-            RP[Repositories\n\RecipeRepository\nIngredientRepository]
+            RP[Repositories\nRecipeRepository\nIngredientRepository]
         end
 
         subgraph DB Container
