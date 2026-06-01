@@ -4,21 +4,25 @@ using RecipeBudgetService.Data;
 using RecipeBudgetService.Entities;
 using RecipeBudgetService.Repositories;
 
-namespace RecipeBudgetService.Tests.Repositories;
+namespace RecipeBudgetService.Tests.IntegrationTests.Repositories;
 
 public class RecipeRepositoryTests : IAsyncLifetime
 {
-    private AppDbContext _dbContext = null;
-    private RecipeRepository _repository = null;
+    private readonly DbContextOptions<AppDbContext> _options;
+    private AppDbContext _dbContext;
+    private RecipeRepository _repository;
 
-    public async Task InitializeAsync()
+    public RecipeRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        _options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _dbContext = new AppDbContext(options);
+
+        _dbContext = new AppDbContext(_options);
         _repository = new RecipeRepository(_dbContext);
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync() => await _dbContext.DisposeAsync();
 
@@ -149,7 +153,6 @@ public class RecipeRepositoryTests : IAsyncLifetime
         // Arrange
         var recipe = new Recipe
         {
-            Id = Guid.NewGuid(),
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
@@ -167,10 +170,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Updated Pasta",
             Description = "An updated delicious pasta",
             Servings = 2,
-            Ingredients = new List<Ingredient>
-            {
-                new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
-            }
+            Ingredients = recipe.Ingredients
         };
 
         // Act
