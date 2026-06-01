@@ -1,6 +1,8 @@
-@backend_dotnet_recipe_and_budget_HostAddress = http://localhost:5001
+@backend_dotnet_recipe_and_budget_HostAddress = http://localhost:5019
 
 GET {{backend_dotnet_recipe_and_budget_HostAddress}}/health/
 Accept: application/json
 
-###
+### Get All Recipes
+GET {{backend_dotnet_recipe_and_budget_HostAddress}}/api/recipes
+Accept: application/json
