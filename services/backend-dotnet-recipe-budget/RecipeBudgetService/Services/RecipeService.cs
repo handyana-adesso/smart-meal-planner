@@ -46,7 +46,7 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
             : recipes.Select(r => r.ToResponse());
     }
 
-    public async Task<RecipeResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<RecipeResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         GuardExtensions.ThrowIfGuidEmpty(id);
 
@@ -57,7 +57,7 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
             : recipe.ToResponse();
     }
 
-    public async Task<RecipeResponse?> UpdateAsync(Guid id, RecipeRequest request, CancellationToken cancellationToken)
+    public async Task<RecipeResponse> UpdateAsync(Guid id, RecipeRequest request, CancellationToken cancellationToken)
     {
         GuardExtensions.ThrowIfGuidEmpty(id);
         ArgumentNullException.ThrowIfNull(request);
@@ -70,6 +70,8 @@ internal class RecipeService(IRecipeRepository repository) : IRecipeService
         }
 
         var updated = await _repository.UpdateAsync(request.ToEntity(id), cancellationToken);
-        return updated?.ToResponse();
+        return updated is null 
+            ? throw new NotFoundException($"Recipe with ID {id} not found.") 
+            : updated.ToResponse();
     }
 }
