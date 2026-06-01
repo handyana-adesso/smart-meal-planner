@@ -22,13 +22,14 @@ flowchart TD
       NET_EP[Endpoints]
       NET_SV[Services]
       NET_RP[Repositories]
-
+      NET_EP --> NET_SV --> NET_RP
     end
 
     subgraph JAVA["Java Service\nGrocery & Meal Plan API"]
       JAVA_EP[Endpoints]
       JAVA_SV[Services]
       JAVA_RP[Repositories]
+      JAVA_EP --> JAVA_SV --> JAVA_RP
     end
   end
 
@@ -39,8 +40,8 @@ flowchart TD
 
   FE -->|REST| NET
   FE -->|REST| JAVA
-  NET --> PG1
-  JAVA --> PG2
+  NET_RP --> PG1
+  JAVA_RP --> PG2
 ```
 
 > No API Gateway/BFF is used in the first phase. It can be added later as an advanced improvement.
