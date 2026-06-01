@@ -10,21 +10,40 @@ public static class RecipeEndpoints
     public static void MapRecipeEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/recipes")
-            .WithTags("Recipes")
-            .AddOpenApiOperationTransformer((operation, context, ct) =>
-            {
-                operation.Summary = "Gets recipe/s";
-                operation.Description = "Endpoints for managing recipes";
-                return Task.CompletedTask;
-            });
+            .WithTags("Recipes");
 
         group.MapPost("/", Create)
+            .WithName("CreateRecipe")
+            .WithSummary("Create a recipe")
+            .WithDescription("Creates a new recipe with optional ingredients.")
+            .Produces<RecipeResponse>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status409Conflict)
             .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
-        group.MapGet("/", GetAll);
-        group.MapGet("/{id:guid}", GetById);
+        group.MapGet("/", GetAll)
+            .WithName("GetAllRecipes")
+            .WithSummary("Get all recipes")
+            .WithDescription("Returns a list of all recipes with estimated costs.");
+        group.MapGet("/{id:guid}", GetById)
+            .WithName("GetRecipeById")
+            .WithSummary("Get recipe by id")
+            .WithDescription("Returns a single recipe by its id.")
+            .Produces<RecipeResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
         group.MapPut("/{id:guid}", Update)
+            .WithName("UpdateRecipe")
+            .WithSummary("Update a recipe")
+            .WithDescription("Updates an existing recipe by its id.")
+            .Produces<RecipeResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status409Conflict)
             .AddEndpointFilter<ValidationFilter<RecipeRequest>>();
-        group.MapDelete("/{id:guid}", Delete);
+        group.MapDelete("/{id:guid}", Delete)
+            .WithName("DeleteRecipe")
+            .WithSummary("Delete a recipe")
+            .WithDescription("Deletes a recipe by its id.")
+            .Produces(StatusCodes.Status204NoContent);
     }
 
     static async Task<IResult> Create([FromServices] IRecipeService recipeService, RecipeRequest request, CancellationToken cancellationToken)

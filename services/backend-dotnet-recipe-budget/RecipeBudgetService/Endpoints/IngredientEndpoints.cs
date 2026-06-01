@@ -10,17 +10,21 @@ public static class IngredientEndpoints
     public static void MapIngredientEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/recipes/{recipeId:guid}/ingredients")
-            .WithTags("Ingredients")
-            .AddOpenApiOperationTransformer((operation, context, ct) =>
-            {
-                operation.Summary = "Gets ingredients";
-                operation.Description = "Endpoints for managing ingredients";
-                return Task.CompletedTask;
-            });
+            .WithTags("Ingredients");
 
         group.MapPost("/", CreateAsync)
+            .WithName("CreateIngredient")
+            .WithSummary("Create an ingredient")
+            .WithDescription("Creates a new ingredient.")
+            .Produces<RecipeResponse>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
             .AddEndpointFilter<ValidationFilter<IngredientRequest>>();
-        group.MapDelete("/{ingredientId:guid}", DeleteAsync);
+        group.MapDelete("/{ingredientId:guid}", DeleteAsync)
+            .WithName("DeleteIngredient")
+            .WithSummary("Delete an ingredient")
+            .WithDescription("Deletes an ingredient by recipe id and its id.")
+            .Produces(StatusCodes.Status204NoContent);
     }
 
     static async Task<IResult> CreateAsync(
@@ -30,7 +34,7 @@ public static class IngredientEndpoints
         CancellationToken cancellationToken)
     {
         var result = await ingredientService.CreateAsync(recipeId, request, cancellationToken);
-        return Results.Created($"/recipes/{recipeId}/ingredients/{result.Id}", result);
+        return Results.Created($"/api/recipes/{recipeId}/ingredients/{result.Id}", result);
     }
 
     static async Task<IResult> DeleteAsync(
