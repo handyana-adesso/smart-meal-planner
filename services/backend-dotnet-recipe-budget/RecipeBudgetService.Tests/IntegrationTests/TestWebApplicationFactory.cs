@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RecipeBudgetService.Data;
@@ -9,7 +10,14 @@ namespace RecipeBudgetService.Tests.IntegrationTests;
 
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly SqliteConnection _connection;
     private readonly string _dbName = Guid.NewGuid().ToString();
+
+    public TestWebApplicationFactory()
+    {
+        _connection = new($"DataSource={_dbName};Mode=Memory;Cache=Shared");
+        _connection.Open();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -31,7 +39,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
             // use fixed db name — same database across all requests in this test
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase(_dbName));
+                options.UseSqlite(_connection));
         });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        _connection.Dispose();
     }
 }
