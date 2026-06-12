@@ -17,4 +17,5 @@ public class Recipe
 
     // Navigation property
     public ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
+    public ICollection<GroceryExpense> GroceryExpenses { get; set; } = new List<GroceryExpense>();
 }
