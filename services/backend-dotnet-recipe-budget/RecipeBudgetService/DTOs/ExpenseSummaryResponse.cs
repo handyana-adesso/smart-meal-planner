@@ -11,7 +11,7 @@ public record ExpenseCategoryBreakdown(
 );
 
 public record ExpenseSummaryResponse(
-    decimal TotalAmoun,
+    decimal TotalAmount,
     int TotalCount,
     List<ExpenseCategoryBreakdown> Breakdowns
 );
