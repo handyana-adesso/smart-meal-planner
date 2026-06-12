@@ -131,10 +131,13 @@ backend-dotnet-recipe-budget/
     ├── IntegrationTests
     │   ├── Endpoints
     │   │   ├── BaseEndpointsIntegrationTests.cs
-    │   │   └── RecipeEndpointsTests.cs
+    │   │   ├── IngredientEndpointsTests.cs
+    │   │   ├── RecipeEndpointsTests.cs
+    │   │   └── GroceryExpenseEndpointsTests.cs
     │   ├── Repositories
     │   │   ├── IngredientRepositoryTests.cs
-    │   │   └── RecipeRepositoryTests.cs
+    │   │   ├── RecipeRepositoryTests.cs
+    │   │   └── ExpenseRepositoryTests.cs
     │   ├── Services
     │   │   ├── IngredientServiceTests.cs
     │   │   └── RecipeServiceTests.cs
@@ -145,7 +148,8 @@ backend-dotnet-recipe-budget/
         │   └── Validators
         └── Services
             ├── IngredientServiceTests.cs
-            └── RecipeServiceTests.cs
+            ├── RecipeServiceTests.cs
+            └── ExpenseServiceTests.cs
 ```
 
 ---
