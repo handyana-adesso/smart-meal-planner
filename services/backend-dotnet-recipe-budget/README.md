@@ -88,34 +88,44 @@ backend-dotnet-recipe-budget/
 │   │   ├── Exceptions/         # NotFoundException, ConflictException
 │   │   ├── Filters/            # ValidationFilter
 │   │   ├── Guards/             # Guard.ThrowIfEmpty, ThrowIfNullOrWhiteSpace
-│   │   ├── Mappings/           # RecipeMappings, IngredientMappings
+│   │   ├── Mappers/           # RecipeMappings, IngredientMappings
 │   │   └── Middleware/         # GlobalExceptionHandler
 │   ├── Data/
 │   │   └── AppDbContext.cs
 │   ├── DTOs/
+│   │   ├── ExpenseSummaryResponse.cs
+│   │   ├── GroceryExpenseRequest.cs
+│   │   ├── GroceryExpenseResponse.cs
 │   │   ├── RecipeRequest.cs
 │   │   ├── RecipeResponse.cs
 │   │   ├── IngredientRequest.cs
 │   │   └── IngredientResponse.cs
 │   ├── Endpoints/
 │   │   ├── RecipeEndpoints.cs
-│   │   └── IngredientEndpoints.cs
+│   │   ├── IngredientEndpoints.cs
+│   │   └── GroceryExpenseEndpoints.cs
 │   ├── Entities/
 │   │   ├── Recipe.cs
-│   │   └── Ingredient.cs
+│   │   ├── Ingredient.cs
+│   │   └── GroceryExpense.cs
 │   ├── Repositories/
 │   │   ├── IRecipeRepository.cs
 │   │   ├── RecipeRepository.cs
 │   │   ├── IIngredientRepository.cs
-│   │   └── IngredientRepository.cs
+│   │   ├── IngredientRepository.cs
+│   │   ├── IExpenseRepository.cs
+│   │   └── ExpenseRepository.cs
 │   ├── Services/
 │   │   ├── IRecipeService.cs
 │   │   ├── RecipeService.cs
 │   │   ├── IIngredientService.cs
-│   │   └── IngredientService.cs
+│   │   ├── IngredientService.cs
+│   │   ├── IExpenseService.cs
+│   │   └── ExpenseService.cs
 │   └── Validators/
 │       ├── RecipeRequestValidator.cs
-│       └── IngredientRequestValidator.cs
+│       ├── IngredientRequestValidator.cs
+│       └── GroceryExpenseRequestValidator.cs
 └── BudgetService.Tests
     ├── Fixtures
     ├── IntegrationTests
@@ -196,12 +206,22 @@ dotnet test --filter "FullyQualifiedName~IntegrationTests"
 
 ### Ingredients
 
-### Ingredients
-
 | Method | Endpoint | Description | Body | Response |
 |--------|----------|-------------|------|----------|
 | `POST` | `/api/recipes/{id}/ingredients` | Add ingredient | `IngredientRequest` | `201`, `400`, `404` |
 | `DELETE` | `/api/recipes/{id}/ingredients/{iId}` | Remove ingredient | — | `204` |
+
+### Expenses
+
+| Method | Endpoint | Description | Body | Response |
+|--------|----------|-------------|------|----------|
+| `GET` | `/api/expenses` | Get all expenses | — | `200` |
+| `GET` | `/api/recipes/{id}` | Get expense by id | — | `200`, `404` |
+| `GET` | `/api/expenses/summary` | Get summary | — | `200` |
+| `GET` | `/api/expenses/category/{category}` | Get by category | `ExpenseCategory` | `200` |
+| `POST` | `/api/expenses` | Create expense | `GroceryExpenseRequest` | `201`, `400`, `404` |
+| `PUT` | `/api/expenses/{id}` | Update expense | `GroceryExpenseRequest` | `200`, `400`, `404` |
+| `DELETE` | `/api/expenses/{id}` | Delete expense | — | `204` |
 
 ### Request / Response Examples
 
