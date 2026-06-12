@@ -11,8 +11,8 @@ public class IngredientServiceFixture
         Description = "A delicious pasta",
         Servings = 2,
         CreatedAt = DateTime.Now,
-        Ingredients = new[]
-        {
+        Ingredients =
+        [
             new Ingredient
             {
                 Id = Guid.NewGuid(),
@@ -21,6 +21,6 @@ public class IngredientServiceFixture
                 Unit = "g",
                 PricePerUnit = 0.01m
             }
-        }
+        ]
     };
 }
