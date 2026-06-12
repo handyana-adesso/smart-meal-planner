@@ -22,8 +22,10 @@ if (!builder.Environment.IsEnvironment("Test"))
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 // Registers all validators in the assembly automatically
 builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
@@ -60,5 +62,6 @@ app.MapHealthChecks("/health");
 
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
+app.MapGroceryExpenseEndpoints();
 
 app.Run();
