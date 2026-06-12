@@ -16,9 +16,9 @@ flowchart TD
         subgraph API Container
             EH[GlobalExceptionHandler]
             EF[ValidationFilter]
-            EP[Endpoints\nRecipeEndpoints\nIngredientEndpoints]
-            SV[Services\nRecipeService\nIngredientService]
-            RP[Repositories\nRecipeRepository\nIngredientRepository]
+            EP[Endpoints\nRecipeEndpoints\nIngredientEndpoints\nExpenseEndpoints]
+            SV[Services\nRecipeService\nIngredientService\nExpenseService]
+            RP[Repositories\nRecipeRepository\nIngredientRepository\nExpenseRepository]
         end
 
         subgraph DB Container
