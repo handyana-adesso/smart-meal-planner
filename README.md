@@ -1,3 +1,5 @@
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Latest-2496ED?logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Latest-2088FF?logo=github-actions&logoColor=white) ![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?logo=kubernetes&logoColor=white) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4)
+
 # Smart Meal Planner
 
 Smart Meal Planner is a fullstack microservice-based platform for recipes, meal planning, grocery lists, pantry inventory and grocery budget tracking.
@@ -115,7 +117,7 @@ The `.NET Recipe Budget Service` follows **Clean Architecture** principles with 
 - **Infrastructure Layer**: Database access, EF Core implementation, and concrete repositories
 - **Presentation Layer**: REST API endpoints, middleware, validators, and dependency injection
 
-See [SERVICE_README.md](./services/backend-dotnet-recipe-budget/SERVICE_README.md) for detailed documentation.
+See [README.md](./services/backend-dotnet-recipe-budget/README.md) for detailed documentation.
 
 ---
 

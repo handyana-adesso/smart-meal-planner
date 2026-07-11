@@ -1,3 +1,5 @@
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![C#](https://img.shields.io/badge/C%23-12-239120?logo=csharp&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12.1-FF6B6B) ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapis&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4)
+
 # Recipe Budget Service (.NET)
 
 A comprehensive RESTful API service for managing recipes, ingredients, and grocery expenses with budget tracking. Built using **Clean Architecture** principles with separated concerns across Domain, Application, Infrastructure, and Presentation layers.
