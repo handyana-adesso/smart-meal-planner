@@ -1,11 +1,12 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using RecipeBudgetService.Common.Middleware;
-using RecipeBudgetService.Common.Validators;
-using RecipeBudgetService.Data;
+using RecipeBudgetService.Middleware;
+using RecipeBudgetService.Validators;
 using RecipeBudgetService.Endpoints;
-using RecipeBudgetService.Repositories;
-using RecipeBudgetService.Services;
+using RecipeBudgetService.Infrastructure.Data;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Application.Services;
+using RecipeBudgetService.Infrastructure.Repositories;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

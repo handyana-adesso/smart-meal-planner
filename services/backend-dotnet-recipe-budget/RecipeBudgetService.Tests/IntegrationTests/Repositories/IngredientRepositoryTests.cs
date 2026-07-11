@@ -1,8 +1,9 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using RecipeBudgetService.Data;
-using RecipeBudgetService.Entities;
-using RecipeBudgetService.Repositories;
+using RecipeBudgetService.Infrastructure.Data;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Infrastructure.Repositories;
 
 namespace RecipeBudgetService.Tests.IntegrationTests.Repositories;
 
@@ -127,3 +128,4 @@ public class IngredientRepositoryTests : IAsyncLifetime
         _dbContext.Ingredients.Should().HaveCount(1);
     }
 }
+

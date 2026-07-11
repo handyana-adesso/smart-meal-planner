@@ -1,4 +1,4 @@
-﻿using RecipeBudgetService.Entities;
+using RecipeBudgetService.Domain.Entities;
 
 namespace RecipeBudgetService.Tests.Fixtures;
 
@@ -50,3 +50,4 @@ public class ExpenseServiceFixture
         };
     }
 }
+

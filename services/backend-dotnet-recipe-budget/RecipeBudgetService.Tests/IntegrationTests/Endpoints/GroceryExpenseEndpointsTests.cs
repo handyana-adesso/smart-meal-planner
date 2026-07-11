@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
+using FluentAssertions;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -295,3 +295,4 @@ public class GroceryExpenseEndpointsTests : BaseEndpointsIntegrationTests
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }
+

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RecipeBudgetService.Common.Filters;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
-using RecipeBudgetService.Services;
+using RecipeBudgetService.Filters;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Services;
 
 namespace RecipeBudgetService.Endpoints;
 

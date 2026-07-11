@@ -1,12 +1,13 @@
-﻿using RecipeBudgetService.Data;
-using RecipeBudgetService.Entities;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Infrastructure.Data;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("RecipeBudgetService.Tests")]
 
-namespace RecipeBudgetService.Repositories;
+namespace RecipeBudgetService.Infrastructure.Repositories;
 
-internal class IngredientRepository(AppDbContext dbContext) : IIngredientRepository
+public class IngredientRepository(AppDbContext dbContext) : IIngredientRepository
 {
     public async Task<Ingredient> CreateAsync(Ingredient ingredient, CancellationToken cancellationToken)
     {

@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
-using RecipeBudgetService.Common.Exceptions;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
-using RecipeBudgetService.Repositories;
-using RecipeBudgetService.Services;
+using RecipeBudgetService.Domain.Exceptions;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Application.Services;
 using RecipeBudgetService.Tests.Fixtures;
 
 namespace RecipeBudgetService.Tests.UnitTests.Services;
@@ -149,3 +149,4 @@ public class IngredientServiceTests : IClassFixture<IngredientServiceFixture>
         await act.Should().ThrowAsync<ArgumentException>();
     }
 }
+

@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RecipeBudgetService.Data;
-using RecipeBudgetService.Entities;
+using Microsoft.EntityFrameworkCore;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Infrastructure.Data;
 
-namespace RecipeBudgetService.Repositories;
+namespace RecipeBudgetService.Infrastructure.Repositories;
 
 public class ExpenseRepository(AppDbContext dbContext) : IExpenseRepository
 {

@@ -1,6 +1,6 @@
-﻿using RecipeBudgetService.DTOs;
+using RecipeBudgetService.Application.DTOs;
 
-namespace RecipeBudgetService.Services;
+namespace RecipeBudgetService.Application.Services;
 
 public interface IRecipeService
 {

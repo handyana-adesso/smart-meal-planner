@@ -1,6 +1,6 @@
-﻿using RecipeBudgetService.Entities;
+using RecipeBudgetService.Domain.Entities;
 
-namespace RecipeBudgetService.Repositories;
+namespace RecipeBudgetService.Application.Repositories;
 
 public interface IRecipeRepository
 {

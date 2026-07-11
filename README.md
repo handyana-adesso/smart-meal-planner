@@ -52,12 +52,12 @@ flowchart TD
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Angular |
-| .NET Backend | ASP.NET Core Minimal API, EF Core, FluentValidation, xUnit |
-| Java Backend | Spring Bot, Spring Security, Spring Data JPA, JUnit |
-| Database | PostgreSQL |
-| Infrastructure | Docker, Docker Compose, GitHub Actions, Jenkins, Kubernetes |
-| Testing | xUnit, JUnit, Cypress, Playwright |
+| Frontend | ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white) |
+| .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) |
+| Java Backend | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F?logo=spring&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6-6DB33F?logo=spring&logoColor=white) ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white) |
+| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) |
+| Infrastructure | ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Latest-2496ED?logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Latest-2088FF?logo=github-actions&logoColor=white) ![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?logo=kubernetes&logoColor=white) |
+| Testing | ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white) ![Cypress](https://img.shields.io/badge/Cypress-13-17202C?logo=cypress&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-Latest-2EAD33?logo=playwright&logoColor=white) |
 
 ---
 
@@ -81,7 +81,13 @@ smart-meal-planner
 |
 |-- services
 |   |-- backend-dotnet-recipe-budget
-|   |   |-- README.md
+|   |   |-- SERVICE_README.md     <-- .NET Service Documentation (Clean Architecture)
+|   |   |-- backend-dotnet-recipe-budget.slnx
+|   |   |-- RecipeBudgetService/                 (Presentation Layer)
+|   |   |-- RecipeBudgetService.Application/     (Application Layer)
+|   |   |-- RecipeBudgetService.Domain/          (Domain Layer)
+|   |   |-- RecipeBudgetService.Infrastructure/  (Infrastructure Layer)
+|   |   |-- RecipeBudgetService.Tests/
 |   |   |-- ...
 |   |-- backend-java-grocery-mealplan
 |       |-- README.md
@@ -99,6 +105,17 @@ smart-meal-planner
         |-- docker-compose.yml
         |-- .env.example
 ```
+
+### .NET Backend Service Architecture
+
+The `.NET Recipe Budget Service` follows **Clean Architecture** principles with clear layer separation:
+
+- **Domain Layer**: Core business entities and domain exceptions (database-agnostic)
+- **Application Layer**: Business logic, services, DTOs, and repository interfaces
+- **Infrastructure Layer**: Database access, EF Core implementation, and concrete repositories
+- **Presentation Layer**: REST API endpoints, middleware, validators, and dependency injection
+
+See [SERVICE_README.md](./services/backend-dotnet-recipe-budget/SERVICE_README.md) for detailed documentation.
 
 ---
 

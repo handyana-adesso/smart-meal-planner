@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using RecipeBudgetService.Common.Validators;
-using RecipeBudgetService.DTOs;
+using RecipeBudgetService.Application.DTOs;
 
 namespace RecipeBudgetService.Tests.UnitTests.Common.Validators;
 
@@ -86,3 +86,4 @@ public class RecipeRequestValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == nameof(RecipeRequest.Name));
     }
 }
+

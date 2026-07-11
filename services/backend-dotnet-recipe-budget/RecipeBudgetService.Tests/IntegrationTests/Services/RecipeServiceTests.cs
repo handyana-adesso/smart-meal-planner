@@ -1,11 +1,12 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using RecipeBudgetService.Common.Exceptions;
-using RecipeBudgetService.Data;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
-using RecipeBudgetService.Repositories;
-using RecipeBudgetService.Services;
+using RecipeBudgetService.Domain.Exceptions;
+using RecipeBudgetService.Infrastructure.Data;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Infrastructure.Repositories;
+using RecipeBudgetService.Application.Services;
 
 namespace RecipeBudgetService.Tests.IntegrationTests.Services;
 
@@ -253,3 +254,4 @@ public class RecipeServiceTests
         result.Should().BeFalse();
     }
 }
+

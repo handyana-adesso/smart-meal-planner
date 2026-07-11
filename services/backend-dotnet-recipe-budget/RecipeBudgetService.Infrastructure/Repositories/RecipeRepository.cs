@@ -1,13 +1,11 @@
-﻿using RecipeBudgetService.Data;
-using RecipeBudgetService.Entities;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Repositories;
+using RecipeBudgetService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("RecipeBudgetService.Tests")]
+namespace RecipeBudgetService.Infrastructure.Repositories;
 
-namespace RecipeBudgetService.Repositories;
-
-internal class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
+public class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
 {
     public async Task<Recipe> CreateAsync(Recipe recipe, CancellationToken cancellationToken)
     {

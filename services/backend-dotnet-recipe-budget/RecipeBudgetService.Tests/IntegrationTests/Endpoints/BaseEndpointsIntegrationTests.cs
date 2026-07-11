@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RecipeBudgetService.Data;
+using RecipeBudgetService.Infrastructure.Data;
 
 namespace RecipeBudgetService.Tests.IntegrationTests.Endpoints;
 
@@ -37,3 +37,4 @@ public abstract class BaseEndpointsIntegrationTests : IAsyncLifetime
         return await seeder(db);
     }
 }
+

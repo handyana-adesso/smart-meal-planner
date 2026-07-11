@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="RecipeBudgetService.Application/RecipeBudgetService.Application.csproj" />
+  <Project Path="RecipeBudgetService.Domain/RecipeBudgetService.Domain.csproj" />
+  <Project Path="RecipeBudgetService.Infrastructure/RecipeBudgetService.Infrastructure.csproj" />
   <Project Path="RecipeBudgetService.Tests/RecipeBudgetService.Tests.csproj" Id="fbf50218-0e79-4d3b-b767-71fdd0df4e98" />
   <Project Path="RecipeBudgetService/RecipeBudgetService.csproj" />
 </Solution>

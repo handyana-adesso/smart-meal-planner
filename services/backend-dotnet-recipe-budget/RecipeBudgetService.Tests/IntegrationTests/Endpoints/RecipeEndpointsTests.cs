@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using RecipeBudgetService.Data;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
+using RecipeBudgetService.Infrastructure.Data;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -369,3 +369,4 @@ public class RecipeEndpointsTests : BaseEndpointsIntegrationTests
         db.Ingredients.Should().BeEmpty();
     }
 }
+

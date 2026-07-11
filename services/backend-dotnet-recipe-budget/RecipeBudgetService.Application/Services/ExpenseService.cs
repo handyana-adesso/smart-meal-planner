@@ -1,11 +1,11 @@
-﻿using RecipeBudgetService.Common.Exceptions;
-using RecipeBudgetService.Common.Extensions;
-using RecipeBudgetService.Common.Mappers;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
-using RecipeBudgetService.Repositories;
+using RecipeBudgetService.Domain.Exceptions;
+using RecipeBudgetService.Domain.Entities;
+using RecipeBudgetService.Application.Extensions;
+using RecipeBudgetService.Application.Mappers;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Application.Repositories;
 
-namespace RecipeBudgetService.Services;
+namespace RecipeBudgetService.Application.Services;
 
 public class ExpenseService(
     IExpenseRepository expenseRepository,

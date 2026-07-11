@@ -1,7 +1,7 @@
-﻿using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Entities;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Domain.Entities;
 
-namespace RecipeBudgetService.Services;
+namespace RecipeBudgetService.Application.Services;
 
 public interface IExpenseService
 {

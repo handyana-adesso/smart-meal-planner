@@ -1,15 +1,15 @@
-﻿using RecipeBudgetService.Common.Exceptions;
-using RecipeBudgetService.Common.Extensions;
-using RecipeBudgetService.Common.Mappers;
-using RecipeBudgetService.DTOs;
-using RecipeBudgetService.Repositories;
+using RecipeBudgetService.Domain.Exceptions;
+using RecipeBudgetService.Application.Extensions;
+using RecipeBudgetService.Application.Mappers;
+using RecipeBudgetService.Application.DTOs;
+using RecipeBudgetService.Application.Repositories;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("RecipeBudgetService.Tests")]
 
-namespace RecipeBudgetService.Services;
+namespace RecipeBudgetService.Application.Services;
 
-internal class RecipeService(IRecipeRepository repository) : IRecipeService
+public class RecipeService(IRecipeRepository repository) : IRecipeService
 {
     private readonly IRecipeRepository _repository = repository
         ?? throw new ArgumentNullException(nameof(repository));

@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
-using RecipeBudgetService.Common.Exceptions;
+using RecipeBudgetService.Domain.Exceptions;
 using RecipeBudgetService.Common.Middleware;
 
 namespace RecipeBudgetService.Tests.UnitTests.Common.Middleware;
@@ -49,3 +49,4 @@ public class GlobalExceptionHandlerTests
         context.Response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
     }
 }
+
