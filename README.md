@@ -58,7 +58,7 @@ flowchart TD
 | Layer | Technology |
 |-------|------------|
 | Frontend | ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white) |
-| .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) — JWT Auth + BCrypt *(planned)* |
+| .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) — JWT Auth + BCrypt |
 | Java Backend | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F?logo=spring&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6-6DB33F?logo=spring&logoColor=white) ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white) |
 | Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) |
 | Infrastructure | ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Latest-2496ED?logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Latest-2088FF?logo=github-actions&logoColor=white) ![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?logo=kubernetes&logoColor=white) |
@@ -75,7 +75,7 @@ flowchart TD
 - Expiry reminders
 - Grocery budget reports
 - Receipt upload
-- User authentication *(planned)*
+- User authentication (JWT) with per-user data scoping
 
 ---
 
@@ -149,7 +149,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=yourpassword
 CONNECTION_STRING=Host=db;Port=5432;Database=recipedb;Username=postgres;Password=yourpassword
 
-# JWT Auth (planned — not yet implemented)
+# JWT Auth (required — API fails to start without JWT_SECRET)
 JWT_SECRET=your-super-secret-key-minimum-32-characters
 JWT_ISSUER=smart-meal-planner
 JWT_AUDIENCE=smart-meal-planner-client
@@ -222,7 +222,7 @@ A second named volume for the Java service's database will be added once that se
 
 | Service | Status |
 |---------|--------|
-| .NET Recipe & Budget API | 🟢 In progress |
+| .NET Recipe & Budget API | 🟢 In progress (JWT auth complete) |
 | Java Grocery & Meal Plan API | 🔴 Not started |
 | Angular Frontend | 🔴 Not started |
 

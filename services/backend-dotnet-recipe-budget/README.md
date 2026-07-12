@@ -4,7 +4,7 @@
 
 A RESTful API service for managing recipes, ingredients, and grocery expenses with budget tracking. Built using **Clean Architecture** principles with separated concerns across Domain, Application, Infrastructure, and API (Presentation) layers.
 
-> **JWT authentication is planned but not yet implemented.** See [Authentication](#-authentication-planned--not-yet-implemented) below for the target design — today every endpoint is reachable without a token.
+> **JWT authentication is implemented.** See [Authentication](#-authentication) below — all Recipe, Ingredient, and Expense endpoints require a valid Bearer token.
 
 ## 🏗️ Architecture Overview
 
@@ -34,7 +34,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
   participant Client
-  participant JWT as JWT Auth (planned)
+  participant JWT as JWT Auth
   participant Filter as ValidationFilter
   participant Handler as GlobalExceptionHandler
   participant Endpoint
@@ -42,7 +42,7 @@ sequenceDiagram
   participant Repo as Infrastructure Repository
   participant DB as PostgreSQL
 
-  Client->>JWT: Bearer token (once implemented)
+  Client->>JWT: Bearer token
   JWT->>Filter: authenticated request
   Filter->>Handler: validated request shape
   Handler->>Endpoint: unhandled exceptions caught
@@ -68,7 +68,7 @@ sequenceDiagram
 | **API Docs** | ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapis&logoColor=white) (Scalar UI) |
 | **Container** | ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) |
 | **Testing** | ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) |
-| **Auth (planned)** | JWT Bearer tokens + BCrypt password hashing — not yet implemented |
+| **Auth** | JWT Bearer tokens + BCrypt password hashing |
 
 ## 📁 Project Structure
 
@@ -114,14 +114,11 @@ services/backend-dotnet-recipe-budget/
 - ✅ RESTful API with OpenAPI documentation (Scalar)
 - ✅ Comprehensive error handling
 - ✅ Input validation with FluentValidation
+- ✅ JWT authentication (register, login, refresh, logout) with BCrypt password hashing
+- ✅ User-scoped recipes and expenses — every user only sees their own data
 - 🚧 Monthly spending report — planned, not yet implemented
-- 🚧 JWT authentication — planned, not yet implemented
 
-## 🔐 Authentication (Planned — not yet implemented)
-
-> The design below is the target contract to build toward. No auth code exists in the service yet — there is no `User`/`RefreshToken` entity, no BCrypt hashing, no auth endpoints, and no `[Authorize]` attribute anywhere in the codebase. All endpoints listed later in this document are reachable without a token today.
-
-### How it will work
+## 🔐 Authentication
 
 - Stateless JWT Bearer tokens, validated per-request
 - Refresh tokens stored in the database, invalidated on logout
@@ -188,7 +185,7 @@ services/backend-dotnet-recipe-budget/
 // 204 No Content
 ```
 
-### Using the token (once implemented)
+### Using the token
 
 ```http
 GET /api/recipes
@@ -211,9 +208,9 @@ Authorization: Bearer eyJhbGci...
 
 ## 📚 API Endpoints
 
-> 🔒 marks endpoints that will require a Bearer token once JWT auth ships. Today, no endpoint enforces authentication.
+> 🔒 marks endpoints that require a valid Bearer token. Recipes and Expenses are user-scoped — each user only sees and manages their own data; accessing another user's resource returns `404` (not `403`, to avoid revealing existence).
 
-#### Auth — planned, not yet implemented
+#### Auth (public — no token required)
 
 | Method | Endpoint | Body | Response |
 |---|---|---|---|
@@ -222,7 +219,7 @@ Authorization: Bearer eyJhbGci...
 | `POST` | `/api/auth/refresh` | `RefreshTokenRequest` | `200`, `400`, `401` |
 | `POST` | `/api/auth/logout` | `RefreshTokenRequest` | `204` |
 
-#### Recipes (🔒 planned)
+#### Recipes (🔒 requires Bearer token — user-scoped)
 
 | Method | Endpoint | Body | Response |
 |---|---|---|---|
@@ -232,14 +229,14 @@ Authorization: Bearer eyJhbGci...
 | `PUT` | `/api/recipes/{id}` | `RecipeRequest` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/recipes/{id}` | — | `204` |
 
-#### Ingredients (🔒 planned)
+#### Ingredients (🔒 requires Bearer token — user-scoped via recipe)
 
 | Method | Endpoint | Body | Response |
 |---|---|---|---|
 | `POST` | `/api/recipes/{id}/ingredients` | `IngredientRequest` | `201`, `400`, `404` |
 | `DELETE` | `/api/recipes/{id}/ingredients/{iId}` | — | `204` |
 
-#### Expenses (🔒 planned)
+#### Expenses (🔒 requires Bearer token — user-scoped)
 
 | Method | Endpoint | Body | Response |
 |---|---|---|---|
@@ -273,7 +270,7 @@ Authorization: Bearer eyJhbGci...
 
 ### Setup
 
-1. Copy `infrastructure/docker/.env.example` to `.env` and fill in real values (or configure the connection string directly in `appsettings.json`)
+1. Copy `infrastructure/docker/.env.example` to `.env` and fill in real values (or configure the connection string and JWT settings directly in `appsettings.Development.json` for local dev — `JWT_SECRET` is **required**, the app fails to start without it)
 2. Run: `dotnet restore`
 3. Run: `dotnet ef database update`
 4. Run: `dotnet run --project RecipeBudgetService`
@@ -282,13 +279,13 @@ Authorization: Bearer eyJhbGci...
 ### `.env` variables
 
 ```env
-# Database (current)
+# Database
 POSTGRES_DB=recipedb
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=yourpassword
 CONNECTION_STRING=Host=db;Port=5432;Database=recipedb;Username=postgres;Password=yourpassword
 
-# JWT (planned — not yet read by the application)
+# JWT — all required, app fails to start if JWT_SECRET is missing
 JWT_SECRET=your-super-secret-key-minimum-32-characters
 JWT_ISSUER=smart-meal-planner
 JWT_AUDIENCE=smart-meal-planner-client
