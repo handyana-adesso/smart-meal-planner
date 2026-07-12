@@ -75,27 +75,27 @@ sequenceDiagram
 ```
 services/backend-dotnet-recipe-budget/
 ├── RecipeBudgetService/                    # API layer (entry point)
-│   ├── Endpoints/          # RecipeEndpoints, IngredientEndpoints, GroceryExpenseEndpoints
+│   ├── Endpoints/          # AuthEndpoints, RecipeEndpoints, IngredientEndpoints, GroceryExpenseEndpoints, ReportEndpoints
+│   ├── Extensions/         # HttpContextExtensions (extract userId from JWT claims)
 │   ├── Filters/            # ValidationFilter<T>
 │   ├── Middleware/         # GlobalExceptionHandler
-│   ├── Validators/         # FluentValidation validators
-│   ├── Migrations/         # EF Core migrations
+│   ├── Validators/         # FluentValidation validators (incl. RegisterRequestValidator, LoginRequestValidator, MonthlySpendingReportRequestValidator)
 │   ├── Program.cs
 │   └── Dockerfile
 │
 ├── RecipeBudgetService.Application/        # Application layer
-│   ├── DTOs/               # Request/Response contracts
-│   ├── Services/           # RecipeService, IngredientService, ExpenseService
-│   ├── Repositories/       # Repository interfaces (IRecipeRepository, etc.)
+│   ├── DTOs/               # Request/Response contracts (incl. DTOs/Auth/)
+│   ├── Services/           # AuthService, RecipeService, IngredientService, ExpenseService, ReportService
+│   ├── Repositories/       # Repository interfaces (IUserRepository, IRefreshTokenRepository, IRecipeRepository, etc.)
 │   ├── Mappers/            # Entity ↔ DTO extension methods
 │   └── Extensions/         # GuardExtensions
 │
 ├── RecipeBudgetService.Domain/             # Domain layer
-│   ├── Entities/           # Recipe, Ingredient, GroceryExpense, ExpenseCategory
-│   └── Exceptions/         # NotFoundException, ConflictException, ValidationException
+│   ├── Entities/           # User, RefreshToken, Recipe, Ingredient, GroceryExpense, ExpenseCategory
+│   └── Exceptions/         # NotFoundException, ConflictException, ValidationException, UnauthorizedException
 │
 ├── RecipeBudgetService.Infrastructure/     # Infrastructure layer
-│   ├── Data/               # AppDbContext
+│   ├── Data/               # AppDbContext, Migrations/
 │   └── Repositories/       # Repository implementations
 │
 └── RecipeBudgetService.Tests/
@@ -116,7 +116,7 @@ services/backend-dotnet-recipe-budget/
 - ✅ Input validation with FluentValidation
 - ✅ JWT authentication (register, login, refresh, logout) with BCrypt password hashing
 - ✅ User-scoped recipes and expenses — every user only sees their own data
-- 🚧 Monthly spending report — planned, not yet implemented
+- ✅ Monthly spending report with per-category breakdown
 
 ## 🔐 Authentication
 
@@ -248,7 +248,7 @@ Authorization: Bearer eyJhbGci...
 | `PUT` | `/api/expenses/{id}` | `GroceryExpenseRequest` | `200`, `400`, `404` |
 | `DELETE` | `/api/expenses/{id}` | — | `204` |
 
-#### Reports — planned, not yet implemented
+#### Reports (🔒 requires Bearer token — user-scoped)
 
 | Method | Endpoint | Params | Response |
 |---|---|---|---|

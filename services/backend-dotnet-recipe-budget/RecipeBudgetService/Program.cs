@@ -33,6 +33,7 @@ builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // Registers all validators in the assembly automatically
 builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
@@ -102,5 +103,6 @@ app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
 app.MapGroceryExpenseEndpoints();
+app.MapReportEndpoints();
 
 app.Run();
