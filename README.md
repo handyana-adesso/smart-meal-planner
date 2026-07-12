@@ -20,11 +20,14 @@ flowchart TD
   FE(["Frontend\nAngular"])
 
   subgraph Backend Services
-    subgraph .NET[".NET Service\nRecipe & Budget API"]
-      NET_EP[Endpoints]
-      NET_SV[Services]
-      NET_RP[Repositories]
-      NET_EP --> NET_SV --> NET_RP
+    subgraph .NET[".NET Service\nRecipe & Budget API\n(Clean Architecture)"]
+      NET_API[API Layer]
+      NET_APP[Application Layer]
+      NET_INFRA[Infrastructure Layer]
+      NET_DOM[Domain Layer]
+      NET_API --> NET_APP --> NET_INFRA
+      NET_APP --> NET_DOM
+      NET_INFRA --> NET_DOM
     end
 
     subgraph JAVA["Java Service\nGrocery & Meal Plan API"]
@@ -40,9 +43,9 @@ flowchart TD
     PG2[(PostgreSQL\nGrocery DB)]
   end
 
-  FE -->|REST| NET_EP
+  FE -->|REST| NET_API
   FE -->|REST| JAVA_EP
-  NET_RP --> PG1
+  NET_INFRA --> PG1
   JAVA_RP --> PG2
 ```
 
@@ -55,7 +58,7 @@ flowchart TD
 | Layer | Technology |
 |-------|------------|
 | Frontend | ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white) |
-| .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) |
+| .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) — JWT Auth + BCrypt *(planned)* |
 | Java Backend | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F?logo=spring&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6-6DB33F?logo=spring&logoColor=white) ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white) |
 | Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) |
 | Infrastructure | ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Latest-2496ED?logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Latest-2088FF?logo=github-actions&logoColor=white) ![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?logo=kubernetes&logoColor=white) |
@@ -72,6 +75,7 @@ flowchart TD
 - Expiry reminders
 - Grocery budget reports
 - Receipt upload
+- User authentication *(planned)*
 
 ---
 
@@ -83,7 +87,7 @@ smart-meal-planner
 |
 |-- services
 |   |-- backend-dotnet-recipe-budget
-|   |   |-- SERVICE_README.md     <-- .NET Service Documentation (Clean Architecture)
+|   |   |-- README.md             <-- .NET Service Documentation (Clean Architecture)
 |   |   |-- backend-dotnet-recipe-budget.slnx
 |   |   |-- RecipeBudgetService/                 (Presentation Layer)
 |   |   |-- RecipeBudgetService.Application/     (Application Layer)
@@ -140,10 +144,17 @@ Edit `.env` with your values:
 
 ```env
 # .NET Recipe & Budget API
-DOTNET_POSTGRES_DB=recipedb
-DOTNET_POSTGRES_USER=postgres
-DOTNET_POSTGRES_PASSWORD=yourpassword
-DOTNET_CONNECTION_STRING=Host=db-recipe;Port=5432;Database=recipedb;Username=postgres;Password=yourpassword
+POSTGRES_DB=recipedb
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=yourpassword
+CONNECTION_STRING=Host=db;Port=5432;Database=recipedb;Username=postgres;Password=yourpassword
+
+# JWT Auth (planned — not yet implemented)
+JWT_SECRET=your-super-secret-key-minimum-32-characters
+JWT_ISSUER=smart-meal-planner
+JWT_AUDIENCE=smart-meal-planner-client
+JWT_ACCESS_TOKEN_EXPIRY_MINUTES=15
+JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
 ```
 
 ### 3. Run everything with Docker Compose
@@ -153,8 +164,8 @@ docker compose up --build
 ```
 | Service | URL |
 |---------|-----|
-| .NET API | http://localhost:5000 |
-| .NET Swagger | http://localhost:5000/swagger |
+| .NET API | http://localhost:5001 |
+| .NET API Docs (Scalar) | http://localhost:5001/scalar |
 
 ### 4. Run individual services
 
@@ -168,7 +179,7 @@ See each service's own README for detailed run instructions:
 
 ```bash
 # .NET Tests
-cd backend-dotnet-recipe-budget
+cd services/backend-dotnet-recipe-budget
 dotnet test
 
 # Java Tests - TODO
@@ -191,13 +202,14 @@ Manages recipes, ingredients and estimated costs.
 
 ## Docker & DB Persistence
 
-All docker are **stateless**, data is never stored inside containers. Each service has its own PostgreSQL container with named volume:
+All docker are **stateless**, data is never stored inside containers. Each service will have its own PostgreSQL container with a named volume. Today only the .NET service exists in `docker-compose.yml`:
 
 ```yaml
 volumes:
-  postgres_recipe_data:       # <-- Recipe & Budget data
-  postgres_grocery_data:      # <-- Grocery & Meal Plan data
+  postgres_data:      # <-- Recipe & Budget data
 ```
+
+A second named volume for the Java service's database will be added once that service's Docker Compose config is built (Week 2).
 
 | Command | Effect |
 |---------|--------|

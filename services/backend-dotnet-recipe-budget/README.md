@@ -2,16 +2,58 @@
 
 # Recipe Budget Service (.NET)
 
-A comprehensive RESTful API service for managing recipes, ingredients, and grocery expenses with budget tracking. Built using **Clean Architecture** principles with separated concerns across Domain, Application, Infrastructure, and Presentation layers.
+A RESTful API service for managing recipes, ingredients, and grocery expenses with budget tracking. Built using **Clean Architecture** principles with separated concerns across Domain, Application, Infrastructure, and API (Presentation) layers.
+
+> **JWT authentication is planned but not yet implemented.** See [Authentication](#-authentication-planned--not-yet-implemented) below for the target design — today every endpoint is reachable without a token.
 
 ## 🏗️ Architecture Overview
 
-This project follows **Clean Architecture** with four main layers:
+This project follows **Clean Architecture** with four layers, split across 5 projects (the 5th being the test project). Dependencies always point inward, toward Domain:
 
-- **Domain Layer** (RecipeBudgetService.Domain): Core business entities and domain exceptions
-- **Application Layer** (RecipeBudgetService.Application): Business logic, services, DTOs, and repository interfaces
-- **Infrastructure Layer** (RecipeBudgetService.Infrastructure): Database access and EF Core implementations
-- **Presentation Layer** (RecipeBudgetService): API endpoints, middleware, validators, and dependency injection
+```mermaid
+flowchart LR
+  API["RecipeBudgetService\n(API layer)"]
+  APP["RecipeBudgetService.Application\n(Application layer)"]
+  INFRA["RecipeBudgetService.Infrastructure\n(Infrastructure layer)"]
+  DOM["RecipeBudgetService.Domain\n(Domain layer)"]
+
+  API --> APP
+  API --> INFRA
+  APP --> DOM
+  INFRA --> APP
+  INFRA --> DOM
+```
+
+- **Domain Layer** (`RecipeBudgetService.Domain`): Core business entities and domain exceptions — no dependencies on any other project
+- **Application Layer** (`RecipeBudgetService.Application`): Business logic, services, DTOs, and repository interfaces — depends only on Domain
+- **Infrastructure Layer** (`RecipeBudgetService.Infrastructure`): Database access and EF Core implementations — depends on Domain and Application
+- **API Layer** (`RecipeBudgetService`): API endpoints, middleware, validators, and dependency injection — depends on all three other layers
+
+### Request flow
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant JWT as JWT Auth (planned)
+  participant Filter as ValidationFilter
+  participant Handler as GlobalExceptionHandler
+  participant Endpoint
+  participant Service as Application Service
+  participant Repo as Infrastructure Repository
+  participant DB as PostgreSQL
+
+  Client->>JWT: Bearer token (once implemented)
+  JWT->>Filter: authenticated request
+  Filter->>Handler: validated request shape
+  Handler->>Endpoint: unhandled exceptions caught
+  Endpoint->>Service: call business logic
+  Service->>Repo: orchestrate data access
+  Repo->>DB: EF Core query
+  DB-->>Repo: entities
+  Repo-->>Service: entities
+  Service-->>Endpoint: response DTO
+  Endpoint-->>Client: HTTP response
+```
 
 ## 🚀 Tech Stack
 
@@ -19,80 +61,253 @@ This project follows **Clean Architecture** with four main layers:
 |-----------|-----------|
 | **Framework** | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) |
 | **Language** | ![C#](https://img.shields.io/badge/C%23-12-239120?logo=csharp&logoColor=white) |
+| **Architecture** | Clean Architecture (Domain / Application / Infrastructure / API) |
 | **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) |
 | **ORM** | ![EF Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4?logo=dotnet&logoColor=white) |
 | **Validation** | ![FluentValidation](https://img.shields.io/badge/FluentValidation-12.1-FF6B6B) |
-| **API Docs** | ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapis&logoColor=white) |
+| **API Docs** | ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapis&logoColor=white) (Scalar UI) |
 | **Container** | ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white) |
 | **Testing** | ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) |
+| **Auth (planned)** | JWT Bearer tokens + BCrypt password hashing — not yet implemented |
 
 ## 📁 Project Structure
 
-**Domain Layer** (Pure business logic, no dependencies)
-- Entities: Recipe, Ingredient, GroceryExpense
-- Exceptions: NotFoundException, ConflictException, ValidationException
+```
+services/backend-dotnet-recipe-budget/
+├── RecipeBudgetService/                    # API layer (entry point)
+│   ├── Endpoints/          # RecipeEndpoints, IngredientEndpoints, GroceryExpenseEndpoints
+│   ├── Filters/            # ValidationFilter<T>
+│   ├── Middleware/         # GlobalExceptionHandler
+│   ├── Validators/         # FluentValidation validators
+│   ├── Migrations/         # EF Core migrations
+│   ├── Program.cs
+│   └── Dockerfile
+│
+├── RecipeBudgetService.Application/        # Application layer
+│   ├── DTOs/               # Request/Response contracts
+│   ├── Services/           # RecipeService, IngredientService, ExpenseService
+│   ├── Repositories/       # Repository interfaces (IRecipeRepository, etc.)
+│   ├── Mappers/            # Entity ↔ DTO extension methods
+│   └── Extensions/         # GuardExtensions
+│
+├── RecipeBudgetService.Domain/             # Domain layer
+│   ├── Entities/           # Recipe, Ingredient, GroceryExpense, ExpenseCategory
+│   └── Exceptions/         # NotFoundException, ConflictException, ValidationException
+│
+├── RecipeBudgetService.Infrastructure/     # Infrastructure layer
+│   ├── Data/               # AppDbContext
+│   └── Repositories/       # Repository implementations
+│
+└── RecipeBudgetService.Tests/
+    ├── UnitTests/           # Service layer tests — mock repository interfaces
+    └── IntegrationTests/    # Repository + endpoint tests
+```
 
-**Application Layer** (Business logic orchestration)
-- Services: RecipeService, IngredientService, ExpenseService
-- DTOs: Request/Response objects for API contracts
-- Repositories: Interfaces for data access
-- Mappers: Entity to DTO conversions
-
-**Infrastructure Layer** (Data access implementation)
-- AppDbContext: EF Core database context
-- Repositories: Concrete repository implementations
-- Migrations: Database schema versioning
-
-**Presentation Layer** (API endpoints)
-- Endpoints: REST API route definitions
-- Middleware: Exception handling, logging
-- Validators: Input validation rules
-- Program.cs: Dependency injection setup
+**Dependency rule**: Domain has no dependencies on other projects → Application depends only on Domain → Infrastructure depends on Domain and Application → the API project (`RecipeBudgetService`) depends on all three. Dependencies always point inward.
 
 ## 🛠️ Features
 
 - ✅ Recipe management (CRUD operations)
 - ✅ Ingredient management with pricing
 - ✅ Grocery expense tracking and categorization
-- ✅ Expense summary and analytics
-- ✅ RESTful API with OpenAPI documentation
+- ✅ Expense summary
+- ✅ RESTful API with OpenAPI documentation (Scalar)
 - ✅ Comprehensive error handling
 - ✅ Input validation with FluentValidation
+- 🚧 Monthly spending report — planned, not yet implemented
+- 🚧 JWT authentication — planned, not yet implemented
+
+## 🔐 Authentication (Planned — not yet implemented)
+
+> The design below is the target contract to build toward. No auth code exists in the service yet — there is no `User`/`RefreshToken` entity, no BCrypt hashing, no auth endpoints, and no `[Authorize]` attribute anywhere in the codebase. All endpoints listed later in this document are reachable without a token today.
+
+### How it will work
+
+- Stateless JWT Bearer tokens, validated per-request
+- Refresh tokens stored in the database, invalidated on logout
+- User id extracted from JWT claims in the endpoint, passed down to services as a parameter — services never touch `HttpContext` directly
+
+### Register
+
+```json
+// POST /api/auth/register
+{
+  "email": "user@example.com",
+  "password": "SecurePass1"
+}
+
+// 201 Created
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "abc123...",
+  "expiresAt": "2026-05-29T10:15:00Z"
+}
+```
+
+### Login
+
+```json
+// POST /api/auth/login
+{
+  "email": "user@example.com",
+  "password": "SecurePass1"
+}
+
+// 200 OK
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "abc123...",
+  "expiresAt": "2026-05-29T10:15:00Z"
+}
+```
+
+### Refresh
+
+```json
+// POST /api/auth/refresh
+{
+  "refreshToken": "abc123..."
+}
+
+// 200 OK
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "xyz789...",
+  "expiresAt": "2026-05-29T10:30:00Z"
+}
+```
+
+### Logout
+
+```json
+// POST /api/auth/logout
+{
+  "refreshToken": "abc123..."
+}
+
+// 204 No Content
+```
+
+### Using the token (once implemented)
+
+```http
+GET /api/recipes
+Authorization: Bearer eyJhbGci...
+```
+
+### Password validation rules
+
+- Minimum 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+
+### Token expiry
+
+| Token | Expiry |
+|---|---|
+| Access token | 15 minutes |
+| Refresh token | 7 days |
 
 ## 📚 API Endpoints
 
-**Recipes**
-- GET /api/recipes - List all recipes
-- POST /api/recipes - Create recipe
-- GET /api/recipes/{id} - Get recipe by ID
-- PUT /api/recipes/{id} - Update recipe
-- DELETE /api/recipes/{id} - Delete recipe
+> 🔒 marks endpoints that will require a Bearer token once JWT auth ships. Today, no endpoint enforces authentication.
 
-**Expenses**
-- GET /api/expenses - List expenses
-- POST /api/expenses - Create expense
-- GET /api/expenses/{id} - Get expense by ID
-- PUT /api/expenses/{id} - Update expense
-- DELETE /api/expenses/{id} - Delete expense
-- GET /api/expenses/summary - Get expense summary
+#### Auth — planned, not yet implemented
+
+| Method | Endpoint | Body | Response |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | `RegisterRequest` | `201`, `400`, `409` |
+| `POST` | `/api/auth/login` | `LoginRequest` | `200`, `400`, `401` |
+| `POST` | `/api/auth/refresh` | `RefreshTokenRequest` | `200`, `400`, `401` |
+| `POST` | `/api/auth/logout` | `RefreshTokenRequest` | `204` |
+
+#### Recipes (🔒 planned)
+
+| Method | Endpoint | Body | Response |
+|---|---|---|---|
+| `GET` | `/api/recipes` | — | `200` + list |
+| `GET` | `/api/recipes/{id}` | — | `200`, `404` |
+| `POST` | `/api/recipes` | `RecipeRequest` | `201`, `400`, `409` |
+| `PUT` | `/api/recipes/{id}` | `RecipeRequest` | `200`, `400`, `404`, `409` |
+| `DELETE` | `/api/recipes/{id}` | — | `204` |
+
+#### Ingredients (🔒 planned)
+
+| Method | Endpoint | Body | Response |
+|---|---|---|---|
+| `POST` | `/api/recipes/{id}/ingredients` | `IngredientRequest` | `201`, `400`, `404` |
+| `DELETE` | `/api/recipes/{id}/ingredients/{iId}` | — | `204` |
+
+#### Expenses (🔒 planned)
+
+| Method | Endpoint | Body | Response |
+|---|---|---|---|
+| `GET` | `/api/expenses` | — | `200` + list |
+| `GET` | `/api/expenses/{id}` | — | `200`, `404` |
+| `GET` | `/api/expenses/summary` | — | `200` + summary |
+| `GET` | `/api/expenses/category/{category}` | — | `200` + list |
+| `POST` | `/api/expenses` | `GroceryExpenseRequest` | `201`, `400`, `404` |
+| `PUT` | `/api/expenses/{id}` | `GroceryExpenseRequest` | `200`, `400`, `404` |
+| `DELETE` | `/api/expenses/{id}` | — | `204` |
+
+#### Reports — planned, not yet implemented
+
+| Method | Endpoint | Params | Response |
+|---|---|---|---|
+| `GET` | `/api/reports/monthly-spending` | `?month=5&year=2026` | `200`, `400` |
+
+#### Health (public)
+
+| Method | Endpoint | Response |
+|---|---|---|
+| `GET` | `/health` | `200 Healthy` |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - .NET 10 SDK
 - PostgreSQL 16+
 - Docker (optional)
 
 ### Setup
-1. Configure database connection in appsettings.json
-2. Run: dotnet restore
-3. Run: dotnet ef database update
-4. Run: dotnet run
-5. Visit: https://localhost:5001/scalar
+
+1. Copy `infrastructure/docker/.env.example` to `.env` and fill in real values (or configure the connection string directly in `appsettings.json`)
+2. Run: `dotnet restore`
+3. Run: `dotnet ef database update`
+4. Run: `dotnet run --project RecipeBudgetService`
+5. Visit: `https://localhost:5001/scalar`
+
+### `.env` variables
+
+```env
+# Database (current)
+POSTGRES_DB=recipedb
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=yourpassword
+CONNECTION_STRING=Host=db;Port=5432;Database=recipedb;Username=postgres;Password=yourpassword
+
+# JWT (planned — not yet read by the application)
+JWT_SECRET=your-super-secret-key-minimum-32-characters
+JWT_ISSUER=smart-meal-planner
+JWT_AUDIENCE=smart-meal-planner-client
+JWT_ACCESS_TOKEN_EXPIRY_MINUTES=15
+JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
+```
 
 ## 🧪 Testing
 
+```bash
+# Run all tests
 dotnet test
+
+# Run only unit tests
+dotnet test --filter FullyQualifiedName~UnitTests
+
+# Run only integration tests
+dotnet test --filter FullyQualifiedName~IntegrationTests
+```
 
 ## 📖 Clean Architecture Principles
 
