@@ -1,4 +1,4 @@
-using RecipeBudgetService.Domain.Entities;
+﻿using RecipeBudgetService.Domain.Entities;
 
 namespace RecipeBudgetService.Application.DTOs;
 

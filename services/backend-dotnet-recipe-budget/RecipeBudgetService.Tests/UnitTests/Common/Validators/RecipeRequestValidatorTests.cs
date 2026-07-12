@@ -1,5 +1,5 @@
 using FluentAssertions;
-using RecipeBudgetService.Common.Validators;
+using RecipeBudgetService.Validators;
 using RecipeBudgetService.Application.DTOs;
 
 namespace RecipeBudgetService.Tests.UnitTests.Common.Validators;

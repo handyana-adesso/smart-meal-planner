@@ -1,3 +1,3 @@
-﻿namespace RecipeBudgetService.Common.Exceptions;
+﻿namespace RecipeBudgetService.Exceptions;
 
 public class ValidationException(string message) : Exception(message);

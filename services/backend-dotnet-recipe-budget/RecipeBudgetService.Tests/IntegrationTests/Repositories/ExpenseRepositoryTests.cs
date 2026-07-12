@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using RecipeBudgetService.Infrastructure.Data;
 using RecipeBudgetService.Domain.Entities;
-using RecipeBudgetService.Application.Repositories
 using RecipeBudgetService.Infrastructure.Repositories;
 
 namespace RecipeBudgetService.Tests.IntegrationTests.Repositories;

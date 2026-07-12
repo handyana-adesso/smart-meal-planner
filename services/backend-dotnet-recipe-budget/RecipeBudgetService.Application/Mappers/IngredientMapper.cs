@@ -12,7 +12,8 @@ public static class IngredientMapper
             ingredient.Name,
             ingredient.Quantity,
             ingredient.Unit,
-            ingredient.PricePerUnit);
+            ingredient.PricePerUnit,
+            ingredient.Quantity * ingredient.PricePerUnit);
     }
 
     public static IEnumerable<IngredientResponse> ToResponses(this IEnumerable<Ingredient> ingredients) 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RecipeBudgetService.Domain.Exceptions;
-using RecipeBudgetService.Common.Middleware;
+using RecipeBudgetService.Middleware;
 
 namespace RecipeBudgetService.Tests.UnitTests.Common.Middleware;
 

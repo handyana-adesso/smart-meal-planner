@@ -7,11 +7,13 @@ public static class RecipeMapper
 {
     public static RecipeResponse ToResponse(this Recipe recipe) =>
         new(
-            recipe.Id, 
-            recipe.Name, 
-            recipe.Description, 
-            recipe.Servings, 
-            recipe.Ingredients.ToResponses());
+            recipe.Id,
+            recipe.Name,
+            recipe.Description,
+            recipe.Servings,
+            recipe.Ingredients.Sum(i => i.PricePerUnit * i.Quantity),
+            recipe.CreatedAt,
+            recipe.Ingredients.ToResponses().ToList());
 
     public static Recipe ToEntity(this RecipeRequest request, Guid? id = null) =>
         new() 

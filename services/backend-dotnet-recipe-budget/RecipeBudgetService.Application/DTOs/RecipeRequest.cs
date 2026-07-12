@@ -1,4 +1,4 @@
-namespace RecipeBudgetService.Application.DTOs;
+﻿namespace RecipeBudgetService.Application.DTOs;
 
 public record RecipeRequest(
     string Name,

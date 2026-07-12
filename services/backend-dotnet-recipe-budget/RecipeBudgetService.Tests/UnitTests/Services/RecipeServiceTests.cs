@@ -159,7 +159,7 @@ public class RecipeServiceTests
         result.Name.Should().Be(request.Name);
         result.Description.Should().Be(request.Description);
         result.Servings.Should().Be(request.Servings);
-        result.Ingredients.Count.Should().Be(request.Ingredients?.Count ?? 0);
+        result.Ingredients!.Count().Should().Be(request.Ingredients?.Count ?? 0);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class RecipeServiceTests
         result.Name.Should().Be(request.Name);
         result.Description.Should().Be(request.Description);
         result.Servings.Should().Be(request.Servings);
-        result.Ingredients.Count.Should().Be(request.Ingredients?.Count ?? 0);
+        result.Ingredients!.Count().Should().Be(request.Ingredients?.Count ?? 0);
     }
 
     [Fact]
