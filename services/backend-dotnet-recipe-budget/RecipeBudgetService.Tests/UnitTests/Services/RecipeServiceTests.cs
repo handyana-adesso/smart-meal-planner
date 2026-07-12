@@ -12,6 +12,7 @@ public class RecipeServiceTests
 {
     private readonly Mock<IRecipeRepository> _repositoryMock = new();
     private readonly RecipeService _recipeService;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public RecipeServiceTests()
     {
@@ -34,11 +35,11 @@ public class RecipeServiceTests
     {
         // Arrange
         _repositoryMock
-            .Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+            .Setup(repo => repo.GetAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<Recipe>);
 
         // Act
-        var result = await _recipeService.GetAllAsync(CancellationToken.None);
+        var result = await _recipeService.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().BeEmpty();
@@ -54,11 +55,11 @@ public class RecipeServiceTests
             new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
-            .Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+            .Setup(repo => repo.GetAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(recipes);
 
         // Act
-        var result = await _recipeService.GetAllAsync(CancellationToken.None);
+        var result = await _recipeService.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
@@ -71,11 +72,11 @@ public class RecipeServiceTests
     {
         // Arrange
         _repositoryMock
-            .Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
+            .Setup(repo => repo.GetAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IEnumerable<Recipe>)null!);
 
         // Act
-        var result = await _recipeService.GetAllAsync(CancellationToken.None);
+        var result = await _recipeService.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().BeEmpty();
@@ -91,11 +92,11 @@ public class RecipeServiceTests
             new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
-            .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == id));
+            .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == id));
 
         // Act
-        var result = await _recipeService.GetByIdAsync(recipes[0].Id, CancellationToken.None);
+        var result = await _recipeService.GetByIdAsync(recipes[0].Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -113,11 +114,11 @@ public class RecipeServiceTests
             new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
-            .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == id));
+            .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == id));
 
         // Act
-        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.NewGuid(), _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -127,7 +128,7 @@ public class RecipeServiceTests
     public async Task GetByIdAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.Empty, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.Empty, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -148,11 +149,12 @@ public class RecipeServiceTests
                 Name = recipe.Name,
                 Description = recipe.Description,
                 Servings = recipe.Servings,
-                Ingredients = recipe.Ingredients
+                Ingredients = recipe.Ingredients,
+                UserId = recipe.UserId
             });
 
         // Act
-        var result = await _recipeService.CreateAsync(request, CancellationToken.None);
+        var result = await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
 
         // Assert
         result.Id.Should().Be(id);
@@ -166,7 +168,7 @@ public class RecipeServiceTests
     public async Task CreateAsync_WhenRequestIsNull_ShouldThrowArgumentNullException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.CreateAsync(null!, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.CreateAsync(null!, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>()
@@ -182,7 +184,7 @@ public class RecipeServiceTests
         // Arrange
         var request = new RecipeRequest(name!, "A delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
         // Act
-        Func<Task> act = async () => await _recipeService.CreateAsync(request, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
             .WithParameterName("request.Name");
@@ -199,8 +201,8 @@ public class RecipeServiceTests
         };
         var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
         _repositoryMock
-            .Setup(repo => repo.UpdateAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Recipe recipe, CancellationToken cancellationToken) =>
+            .Setup(repo => repo.UpdateAsync(It.IsAny<Recipe>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Recipe recipe, Guid userId, CancellationToken cancellationToken) =>
             {
                 var found = recipes.FirstOrDefault(r => r.Id == recipe.Id);
                 if (found is not null)
@@ -213,7 +215,7 @@ public class RecipeServiceTests
                 return found;
             });
         // Act
-        var result = await _recipeService.UpdateAsync(recipes[0].Id, request, CancellationToken.None);
+        var result = await _recipeService.UpdateAsync(recipes[0].Id, request, _userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -230,7 +232,7 @@ public class RecipeServiceTests
         // Arrange
         var request = new RecipeRequest("Ghost");
         var recipes = new List<Recipe>
-        { 
+        {
             new()
             {
                 Id = Guid.NewGuid(),
@@ -241,11 +243,11 @@ public class RecipeServiceTests
             }
         };
         _repositoryMock
-            .Setup(repo => repo.UpdateAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Recipe recipe, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == recipe.Id));
+            .Setup(repo => repo.UpdateAsync(It.IsAny<Recipe>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Recipe recipe, Guid userId, CancellationToken cancellationToken) => recipes.FirstOrDefault(r => r.Id == recipe.Id));
 
         // Act
-        var act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, CancellationToken.None);
+        var act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -258,7 +260,7 @@ public class RecipeServiceTests
         var request = new RecipeRequest("Updated Pasta", "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
 
         // Act
-        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.Empty, request, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.Empty, request, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -269,7 +271,7 @@ public class RecipeServiceTests
     public async Task UpdateAsync_WhenRequestIsNull_ShouldThrowArgumentNullException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), null!, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), null!, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>()
@@ -286,7 +288,7 @@ public class RecipeServiceTests
         var request = new RecipeRequest(name!, "An extra delicious pasta", 1, new List<IngredientRequest> { new("Spaghetti", 200, "g", 0.01m) });
 
         // Act
-        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.UpdateAsync(Guid.NewGuid(), request, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -303,11 +305,11 @@ public class RecipeServiceTests
             new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
-            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken cancellationToken) => recipes.Any(r => r.Id == id));
+            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken cancellationToken) => recipes.Any(r => r.Id == id));
 
         // Act
-        var result = await _recipeService.DeleteAsync(recipes[0].Id, CancellationToken.None);
+        var result = await _recipeService.DeleteAsync(recipes[0].Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -323,12 +325,12 @@ public class RecipeServiceTests
             new() { Id = Guid.NewGuid(), Name = "Pizza", Description = "Pizza margharita", Servings = 2, Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Cheese", Quantity = 100, Unit = "g", PricePerUnit = 0.05m } } }
         };
         _repositoryMock
-            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken cancellationToken) => recipes.Any(r => r.Id == id));
+            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken cancellationToken) => recipes.Any(r => r.Id == id));
 
         // Act
-        var result = await _recipeService.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
-        
+        var result = await _recipeService.DeleteAsync(Guid.NewGuid(), _userId, CancellationToken.None);
+
         // Assert
         result.Should().BeFalse();
     }
@@ -337,11 +339,10 @@ public class RecipeServiceTests
     public async Task DeleteAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.DeleteAsync(Guid.Empty, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.DeleteAsync(Guid.Empty, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
             .WithParameterName("id");
     }
 }
-

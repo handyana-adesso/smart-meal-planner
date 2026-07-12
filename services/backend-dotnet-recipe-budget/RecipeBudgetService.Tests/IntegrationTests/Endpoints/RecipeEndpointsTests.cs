@@ -22,7 +22,8 @@ public class RecipeEndpointsTests : BaseEndpointsIntegrationTests
             {
                 Name = name,
                 Servings = servings,
-                Ingredients = ingredients ?? []
+                Ingredients = ingredients ?? [],
+                UserId = UserId
             };
             db.Recipes.Add(recipe);
             await db.SaveChangesAsync();
@@ -367,6 +368,72 @@ public class RecipeEndpointsTests : BaseEndpointsIntegrationTests
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Ingredients.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_WithoutToken_ShouldReturn401()
+    {
+        // Arrange
+        var anonymousClient = Factory.CreateClient();
+
+        // Act
+        var response = await anonymousClient.GetAsync("/api/recipes");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_WithValidToken_ShouldReturn200()
+    {
+        // Act
+        var response = await Client.GetAsync("/api/recipes");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_ShouldOnlyReturnCurrentUserRecipes()
+    {
+        // Arrange — one recipe for the current user, one for another user
+        await SeedRecipeAsync();
+        var otherClient = await GetAuthenticatedClientAsync();
+        await otherClient.PostAsJsonAsync("/api/recipes", new RecipeRequest("Other user's recipe", "desc", 2));
+
+        // Act
+        var response = await Client.GetAsync("/api/recipes");
+        var body = await response.Content.ReadFromJsonAsync<List<RecipeResponse>>();
+
+        // Assert
+        body.Should().ContainSingle();
+        body!.Single().Name.Should().Be("Pasta");
+    }
+
+    [Fact]
+    public async Task POST_ApiRecipes_ShouldAssignRecipeToCurrentUser()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/recipes", new RecipeRequest("Pasta", "A delicious pasta", 2));
+        var body = await response.Content.ReadFromJsonAsync<RecipeResponse>();
+
+        // Assert — the current user can retrieve it back
+        var getResponse = await Client.GetAsync($"/api/recipes/{body!.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GET_ApiRecipes_WhenAccessingOtherUserRecipe_ShouldReturn404()
+    {
+        // Arrange
+        var recipe = await SeedRecipeAsync();
+        var otherClient = await GetAuthenticatedClientAsync();
+
+        // Act
+        var response = await otherClient.GetAsync($"/api/recipes/{recipe.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }
 

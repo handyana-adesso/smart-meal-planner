@@ -14,6 +14,7 @@ public class RecipeServiceTests
 {
     private readonly AppDbContext _dbContext;
     private readonly RecipeService _recipeService;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public RecipeServiceTests()
     {
@@ -29,8 +30,8 @@ public class RecipeServiceTests
     public async Task GetAllAsync_WhenNoRecipes_ReturnsEmptyList()
     {
         // Act
-        var result = await _recipeService.GetAllAsync(CancellationToken.None);
-        
+        var result = await _recipeService.GetAllAsync(_userId, CancellationToken.None);
+
         // Assert
         result.Should().BeEmpty();
     }
@@ -43,6 +44,7 @@ public class RecipeServiceTests
         {
             Name = "Pasta",
             Description = "Delicious pasta recipe",
+            UserId = _userId,
             Ingredients = [
                 new Ingredient { Name = "Pasta", Quantity = 200, Unit = "g", PricePerUnit = 0.01m },
             ]
@@ -50,7 +52,7 @@ public class RecipeServiceTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _recipeService.GetAllAsync(CancellationToken.None);
+        var result = await _recipeService.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(1);
@@ -66,6 +68,7 @@ public class RecipeServiceTests
             Name = "Pasta",
             Description = "Delicious pasta recipe",
             Servings = 2,
+            UserId = _userId,
             Ingredients = [
                 new Ingredient { Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m },
                 new Ingredient { Name = "Eggs", Quantity = 3, Unit = "pcs", PricePerUnit = 0.50m }
@@ -75,7 +78,7 @@ public class RecipeServiceTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _recipeService.GetByIdAsync(recipe.Id, CancellationToken.None);
+        var result = await _recipeService.GetByIdAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -89,7 +92,7 @@ public class RecipeServiceTests
     public async Task GetByIdAsync_WhenRecipeDoesNotExist_ShouldThrowNotFoundException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.NewGuid(), _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -99,7 +102,7 @@ public class RecipeServiceTests
     public async Task GetByIdAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
         // Act
-        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.Empty, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.GetByIdAsync(Guid.Empty, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>();
@@ -112,7 +115,7 @@ public class RecipeServiceTests
         var request = new RecipeRequest("Pasta", "Delicious pasta recipe", 2);
 
         // Act
-        var result = await _recipeService.CreateAsync(request, CancellationToken.None);
+        var result = await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
 
         // Assert
         result.Id.Should().NotBe(Guid.Empty);
@@ -124,6 +127,7 @@ public class RecipeServiceTests
         var saved = await _dbContext.Recipes.FindAsync(result.Id);
         saved.Should().NotBeNull();
         saved!.Name.Should().Be("Pasta");
+        saved.UserId.Should().Be(_userId);
     }
 
     [Fact]
@@ -137,7 +141,7 @@ public class RecipeServiceTests
         });
 
         // Act
-        var result = await _recipeService.CreateAsync(request, CancellationToken.None);
+        var result = await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
 
         // Assert
         result.Ingredients.Should().HaveCount(2);
@@ -150,13 +154,13 @@ public class RecipeServiceTests
     public async Task CreateAsync_WhenNameIsAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        var existing = new Recipe { Name = "Pasta", Description = "Existing recipe", Servings = 2 };
+        var existing = new Recipe { Name = "Pasta", Description = "Existing recipe", Servings = 2, UserId = _userId };
         _dbContext.Recipes.Add(existing);
         await _dbContext.SaveChangesAsync();
         var request = new RecipeRequest("Pasta", "New recipe with same name", 4);
 
         // Act
-        Func<Task> act = async () => await _recipeService.CreateAsync(request, CancellationToken.None);
+        Func<Task> act = async () => await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>()
@@ -164,10 +168,27 @@ public class RecipeServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenNameExistsForOtherUser_ShouldNotThrow()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var existing = new Recipe { Name = "Pasta", Description = "Existing recipe", Servings = 2, UserId = otherUserId };
+        _dbContext.Recipes.Add(existing);
+        await _dbContext.SaveChangesAsync();
+        var request = new RecipeRequest("Pasta", "New recipe with same name", 4);
+
+        // Act
+        Func<Task> act = async () => await _recipeService.CreateAsync(request, _userId, CancellationToken.None);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
     public async Task UpdateAsync_ShouldPersistChangesToDatabase()
     {
         // Arrange
-        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2 };
+        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2, UserId = _userId };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
@@ -176,6 +197,7 @@ public class RecipeServiceTests
         var result = await _recipeService.UpdateAsync(
             recipe.Id,
             new RecipeRequest("Updated Pasta", "Updated pasta recipe", 4),
+            _userId,
             CancellationToken.None
         );
 
@@ -197,6 +219,29 @@ public class RecipeServiceTests
         var act = async () => await _recipeService.UpdateAsync(
             Guid.NewGuid(),
             new RecipeRequest("Ghost", "Ghost recipe", 1),
+            _userId,
+            CancellationToken.None
+        );
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenRecipeBelongsToOtherUser_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2, UserId = otherUserId };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var act = async () => await _recipeService.UpdateAsync(
+            recipe.Id,
+            new RecipeRequest("Updated Pasta", "Updated pasta recipe", 4),
+            _userId,
             CancellationToken.None
         );
 
@@ -208,12 +253,12 @@ public class RecipeServiceTests
     public async Task DeleteAsync_ShouldRemoveFromDatabase()
     {
         // Arrange
-        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2 };
+        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2, UserId = _userId };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        await _recipeService.DeleteAsync(recipe.Id, CancellationToken.None);
+        await _recipeService.DeleteAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert — verify actually deleted from database
         var deleted = await _dbContext.Recipes.FindAsync(recipe.Id);
@@ -229,6 +274,7 @@ public class RecipeServiceTests
             Name = "Pasta",
             Description = "Delicious pasta recipe",
             Servings = 2,
+            UserId = _userId,
             Ingredients = new List<Ingredient>
             {
                 new() { Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
@@ -238,7 +284,7 @@ public class RecipeServiceTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        await _recipeService.DeleteAsync(recipe.Id, CancellationToken.None);
+        await _recipeService.DeleteAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert — ingredients deleted too
         _dbContext.Ingredients.Should().BeEmpty();
@@ -248,10 +294,25 @@ public class RecipeServiceTests
     public async Task DeleteAsync_WhenRecipeDoesNotExist_ShouldReturnsFalse()
     {
         // Act
-        var result = await _recipeService.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
+        var result = await _recipeService.DeleteAsync(Guid.NewGuid(), _userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenRecipeBelongsToOtherUser_ShouldReturnFalse()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe { Name = "Pasta", Description = "Delicious pasta recipe", Servings = 2, UserId = otherUserId };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _recipeService.DeleteAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeFalse();
     }
 }
-

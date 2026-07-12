@@ -16,20 +16,22 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     private readonly ExpenseService _service;
     private readonly List<GroceryExpense> _expenses;
     private readonly Recipe _recipe;
+    private readonly Guid _userId;
 
     public ExpenseServiceTests(ExpenseServiceFixture fixture)
     {
         _expenses = fixture.Expenses;
         _recipe = fixture.Recipe;
+        _userId = fixture.UserId;
         _service = new ExpenseService(
-            _repositoryMock.Object, 
+            _repositoryMock.Object,
             _recipeRepositoryMock.Object);
 
-        _repositoryMock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.GetAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(_expenses);
 
-        _repositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken ct) => _expenses.FirstOrDefault(e => e.Id == id));
+        _repositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken ct) => _expenses.FirstOrDefault(e => e.Id == id));
 
         _repositoryMock.Setup(r => r.CreateAsync(It.IsAny<GroceryExpense>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GroceryExpense expense, CancellationToken ct) => new()
@@ -40,20 +42,21 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
                 Category = expense.Category,
                 Date = expense.Date,
                 CreatedAt = DateTime.UtcNow,
-                RecipeId = expense.RecipeId
+                RecipeId = expense.RecipeId,
+                UserId = expense.UserId
             });
 
-        _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<GroceryExpense>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((GroceryExpense expense, CancellationToken ct) => _expenses.FirstOrDefault(e => e.Id == expense.Id));
+        _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<GroceryExpense>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GroceryExpense expense, Guid userId, CancellationToken ct) => _expenses.FirstOrDefault(e => e.Id == expense.Id));
 
-        _repositoryMock.Setup(r => r.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken ct) => _expenses.Any(e => e.Id == id));
+        _repositoryMock.Setup(r => r.DeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken ct) => _expenses.Any(e => e.Id == id));
 
-        _repositoryMock.Setup(r => r.GetByCategoryAsync(It.IsAny<ExpenseCategory>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ExpenseCategory category, CancellationToken ct) => _expenses.Where(e => e.Category == category).ToList());
+        _repositoryMock.Setup(r => r.GetByCategoryAsync(It.IsAny<ExpenseCategory>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ExpenseCategory category, Guid userId, CancellationToken ct) => _expenses.Where(e => e.Category == category).ToList());
 
-        _recipeRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, CancellationToken ct) => id == _recipe.Id ? _recipe : null);
+        _recipeRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid userId, CancellationToken ct) => id == _recipe.Id ? _recipe : null);
     }
 
     [Fact]
@@ -75,14 +78,14 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetAllAsync_ShouldReturnAllMappedExpenses()
     {
-        var result = await _service.GetAllAsync(CancellationToken.None);
+        var result = await _service.GetAllAsync(_userId, CancellationToken.None);
         result.Should().HaveCount(3);
     }
 
     [Fact]
     public async Task GetAllAsync_ShouldReturnMappedCategoryNames()
     {
-        var result = await _service.GetAllAsync(CancellationToken.None);
+        var result = await _service.GetAllAsync(_userId, CancellationToken.None);
         result.Should().AllSatisfy(e =>
             e.CategoryName.Should().NotBeNullOrEmpty());
     }
@@ -91,7 +94,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     public async Task GetByIdAsync_WhenExpenseExists_ShouldReturnMappedResponse()
     {
         var id = _expenses.First().Id;
-        var result = await _service.GetByIdAsync(id, CancellationToken.None);
+        var result = await _service.GetByIdAsync(id, _userId, CancellationToken.None);
 
         result.Should().NotBeNull();
         result.Description.Should().Be("Weekly groceries");
@@ -103,14 +106,14 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetByIdAsync_WhenExpenseDoesNotExist_ShouldThrowNotFoundException()
     {
-        var act = async () => await _service.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+        var act = async () => await _service.GetByIdAsync(Guid.NewGuid(), _userId, CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
     public async Task GetByIdAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
-        var act = async () => await _service.GetByIdAsync(Guid.Empty, CancellationToken.None);
+        var act = async () => await _service.GetByIdAsync(Guid.Empty, _userId, CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
@@ -122,7 +125,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
             45.00m,
             ExpenseCategory.Groceries);
 
-        var result = await _service.CreateAsync(request, CancellationToken.None);
+        var result = await _service.CreateAsync(request, _userId, CancellationToken.None);
 
         result.Id.Should().NotBe(Guid.Empty);
         result.Description.Should().Be("Supermarket run");
@@ -140,7 +143,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
             ExpenseCategory.Groceries,
             RecipeId: _recipe.Id);
 
-        var act = async () => await _service.CreateAsync(request, CancellationToken.None);
+        var act = async () => await _service.CreateAsync(request, _userId, CancellationToken.None);
         await act.Should().NotThrowAsync();
     }
 
@@ -153,7 +156,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
             ExpenseCategory.Groceries,
             RecipeId: Guid.NewGuid());
 
-        var act = async () => await _service.CreateAsync(request, CancellationToken.None);
+        var act = async () => await _service.CreateAsync(request, _userId, CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage("*Recipe*");
     }
@@ -161,7 +164,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task CreateAsync_WhenRequestIsNull_ShouldThrowArgumentNullException()
     {
-        var act = async () => await _service.CreateAsync(null!, CancellationToken.None);
+        var act = async () => await _service.CreateAsync(null!, _userId, CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
@@ -173,7 +176,8 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
         string? description)
     {
         var act = async () => await _service.CreateAsync(
-            new GroceryExpenseRequest(description!, 45.00m, ExpenseCategory.Groceries), 
+            new GroceryExpenseRequest(description!, 45.00m, ExpenseCategory.Groceries),
+            _userId,
             CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentException>();
     }
@@ -184,7 +188,8 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
         var id = _expenses.First().Id;
         var result = await _service.UpdateAsync(
             id,
-            new GroceryExpenseRequest("Updated groceries", 60.00m, ExpenseCategory.Groceries), 
+            new GroceryExpenseRequest("Updated groceries", 60.00m, ExpenseCategory.Groceries),
+            _userId,
             CancellationToken.None);
 
         result.Should().NotBeNull();
@@ -195,7 +200,8 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     {
         var act = async () => await _service.UpdateAsync(
             Guid.NewGuid(),
-            new GroceryExpenseRequest("Ghost", 10.00m, ExpenseCategory.Groceries), 
+            new GroceryExpenseRequest("Ghost", 10.00m, ExpenseCategory.Groceries),
+            _userId,
             CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -205,7 +211,8 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     {
         var act = async () => await _service.UpdateAsync(
             Guid.Empty,
-            new GroceryExpenseRequest("Test", 10.00m, ExpenseCategory.Groceries), 
+            new GroceryExpenseRequest("Test", 10.00m, ExpenseCategory.Groceries),
+            _userId,
             CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentException>();
     }
@@ -220,7 +227,8 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
                 "Test",
                 10.00m,
                 ExpenseCategory.Groceries,
-                RecipeId: Guid.NewGuid()), 
+                RecipeId: Guid.NewGuid()),
+            _userId,
             CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage("*Recipe*");
@@ -230,28 +238,28 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     public async Task DeleteAsync_WhenExpenseExists_ShouldReturnTrue()
     {
         var id = _expenses.First().Id;
-        var result = await _service.DeleteAsync(id, CancellationToken.None);
+        var result = await _service.DeleteAsync(id, _userId, CancellationToken.None);
         result.Should().BeTrue();
     }
 
     [Fact]
     public async Task DeleteAsync_WhenExpenseDoesNotExist_ShouldReturnFalse()
     {
-        var result = await _service.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
+        var result = await _service.DeleteAsync(Guid.NewGuid(), _userId, CancellationToken.None);
         result.Should().BeFalse();
     }
 
     [Fact]
     public async Task DeleteAsync_WhenIdIsEmpty_ShouldThrowArgumentException()
     {
-        var act = async () => await _service.DeleteAsync(Guid.Empty, CancellationToken.None);
+        var act = async () => await _service.DeleteAsync(Guid.Empty, _userId, CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
     public async Task GetByCategoryAsync_ShouldReturnOnlyMatchingCategory()
     {
-        var result = await _service.GetByCategoryAsync(ExpenseCategory.Groceries, CancellationToken.None);
+        var result = await _service.GetByCategoryAsync(ExpenseCategory.Groceries, _userId, CancellationToken.None);
 
         result.Should().HaveCount(1);
         result.Should().AllSatisfy(e =>
@@ -262,17 +270,17 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     public async Task GetByCategoryAsync_WhenNoneInCategory_ShouldReturnEmptyList()
     {
         _repositoryMock
-            .Setup(r => r.GetByCategoryAsync(ExpenseCategory.Household))
+            .Setup(r => r.GetByCategoryAsync(ExpenseCategory.Household, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GroceryExpense>());
 
-        var result = await _service.GetByCategoryAsync(ExpenseCategory.Household, CancellationToken.None);
+        var result = await _service.GetByCategoryAsync(ExpenseCategory.Household, _userId, CancellationToken.None);
         result.Should().BeEmpty();
     }
 
     [Fact]
     public async Task GetSummaryAsync_ShouldReturnCorrectTotalAmount()
     {
-        var result = await _service.GetSummaryAsync(CancellationToken.None);
+        var result = await _service.GetSummaryAsync(_userId, CancellationToken.None);
 
         result.TotalAmount.Should().Be(105.00m);  // 50 + 35 + 20
         result.TotalCount.Should().Be(3);
@@ -281,7 +289,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetSummaryAsync_ShouldReturnBreakdownPerCategory()
     {
-        var result = await _service.GetSummaryAsync(CancellationToken.None);
+        var result = await _service.GetSummaryAsync(_userId, CancellationToken.None);
 
         result.Breakdowns.Should().HaveCount(3);
         result.Breakdowns.Should().ContainSingle(b =>
@@ -298,7 +306,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetSummaryAsync_ShouldReturnCorrectPercentages()
     {
-        var result = await _service.GetSummaryAsync(CancellationToken.None);
+        var result = await _service.GetSummaryAsync(_userId, CancellationToken.None);
 
         var groceries = result.Breakdowns
             .First(b => b.Category == ExpenseCategory.Groceries);
@@ -309,7 +317,7 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetSummaryAsync_ShouldOrderBreakdownByTotalAmountDescending()
     {
-        var result = await _service.GetSummaryAsync(CancellationToken.None);
+        var result = await _service.GetSummaryAsync(_userId, CancellationToken.None);
 
         result.Breakdowns.Should().BeInDescendingOrder(b => b.TotalAmount);
     }
@@ -317,14 +325,13 @@ public class ExpenseServiceTests : IClassFixture<ExpenseServiceFixture>
     [Fact]
     public async Task GetSummaryAsync_WhenNoExpenses_ShouldReturnZeroSummary()
     {
-        _repositoryMock.Setup(r => r.GetAllAsync())
+        _repositoryMock.Setup(r => r.GetAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GroceryExpense>());
 
-        var result = await _service.GetSummaryAsync(CancellationToken.None);
+        var result = await _service.GetSummaryAsync(_userId, CancellationToken.None);
 
         result.TotalAmount.Should().Be(0);
         result.TotalCount.Should().Be(0);
         result.Breakdowns.Should().BeEmpty();
     }
 }
-

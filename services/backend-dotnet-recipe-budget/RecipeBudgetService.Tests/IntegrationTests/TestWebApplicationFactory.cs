@@ -17,6 +17,14 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         _connection = new($"DataSource={_dbName};Mode=Memory;Cache=Shared");
         _connection.Open();
+
+        // Ensure JWT config is available before Program.cs reads it, regardless of
+        // how WebApplicationFactory/HostFactoryResolver times config source loading.
+        Environment.SetEnvironmentVariable("JWT_SECRET", "test-only-secret-key-minimum-32-characters-long");
+        Environment.SetEnvironmentVariable("JWT_ISSUER", "smart-meal-planner-test");
+        Environment.SetEnvironmentVariable("JWT_AUDIENCE", "smart-meal-planner-client-test");
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRY_MINUTES", "15");
+        Environment.SetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRY_DAYS", "7");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

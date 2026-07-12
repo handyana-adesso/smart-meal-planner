@@ -14,11 +14,11 @@ public class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
         return recipe;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken)
     {
         var recipe = dbContext
             .Recipes
-            .FirstOrDefault(r => r.Id == id);
+            .FirstOrDefault(r => r.Id == id && r.UserId == userId);
 
         if (recipe is null)
         {
@@ -33,27 +33,28 @@ public class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
         return true;
     }
 
-    public async Task<IEnumerable<Recipe>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IEnumerable<Recipe>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
     {
         return await dbContext
             .Recipes
             .Include(r => r.Ingredients)
+            .Where(r => r.UserId == userId)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Recipe?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Recipe?> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
     {
         return await dbContext
             .Recipes
             .Include(r => r.Ingredients)
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId, cancellationToken);
     }
 
-    public async Task<Recipe?> UpdateAsync(Recipe recipe, CancellationToken cancellationToken)
+    public async Task<Recipe?> UpdateAsync(Recipe recipe, Guid userId, CancellationToken cancellationToken)
     {
         var existing = dbContext
             .Recipes
-            .FirstOrDefault(r => r.Id == recipe.Id);
+            .FirstOrDefault(r => r.Id == recipe.Id && r.UserId == userId);
 
         if (existing is null)
         {
@@ -77,10 +78,10 @@ public class RecipeRepository(AppDbContext dbContext) : IRecipeRepository
         return existing;
     }
 
-    public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+    public async Task<bool> ExistsByNameAsync(string name, Guid userId, CancellationToken cancellationToken)
     {
         return await dbContext
             .Recipes
-            .AnyAsync(r => r.Name.ToLower() == name.ToLower(), cancellationToken);
+            .AnyAsync(r => r.Name.ToLower() == name.ToLower() && r.UserId == userId, cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using RecipeBudgetService.Extensions;
 using RecipeBudgetService.Filters;
 using RecipeBudgetService.Application.DTOs;
 using RecipeBudgetService.Domain.Entities;
@@ -11,7 +12,8 @@ public static class GroceryExpenseEndpoints
     public static void MapGroceryExpenseEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/expenses")
-            .WithTags("Expenses");
+            .WithTags("Expenses")
+            .RequireAuthorization();
 
         group.MapGet("/", GetAllAsync)
             .WithName("GetAllExpenses")
@@ -64,49 +66,56 @@ public static class GroceryExpenseEndpoints
     }
 
     static async Task<IResult> GetAllAsync(
+        HttpContext httpContext,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
-        => Results.Ok(await expenseService.GetAllAsync(cancellationToken));
+        => Results.Ok(await expenseService.GetAllAsync(httpContext.GetUserId(), cancellationToken));
 
     static async Task<IResult> GetByIdAsync(
+        HttpContext httpContext,
         Guid id,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
-        => Results.Ok(await expenseService.GetByIdAsync(id, cancellationToken));
+        => Results.Ok(await expenseService.GetByIdAsync(id, httpContext.GetUserId(), cancellationToken));
 
     static async Task<IResult> GetSummaryAsync(
+        HttpContext httpContext,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
-        => Results.Ok(await expenseService.GetSummaryAsync(cancellationToken));
+        => Results.Ok(await expenseService.GetSummaryAsync(httpContext.GetUserId(), cancellationToken));
 
     static async Task<IResult> GetByCategoryAsync(
+        HttpContext httpContext,
         ExpenseCategory category,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
-        => Results.Ok(await expenseService.GetByCategoryAsync(category, cancellationToken));
+        => Results.Ok(await expenseService.GetByCategoryAsync(category, httpContext.GetUserId(), cancellationToken));
 
     static async Task<IResult> CreateAsync(
+        HttpContext httpContext,
         GroceryExpenseRequest request,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
     {
-        var created = await expenseService.CreateAsync(request, cancellationToken);
+        var created = await expenseService.CreateAsync(request, httpContext.GetUserId(), cancellationToken);
         return Results.Created($"/api/expenses/{created.Id}", created);
     }
 
     static async Task<IResult> UpdateAsync(
+        HttpContext httpContext,
         Guid id,
         GroceryExpenseRequest request,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
-        => Results.Ok(await expenseService.UpdateAsync(id, request, cancellationToken));
+        => Results.Ok(await expenseService.UpdateAsync(id, request, httpContext.GetUserId(), cancellationToken));
 
     static async Task<IResult> DeleteAsync(
+        HttpContext httpContext,
         Guid id,
         [FromServices] IExpenseService expenseService,
         CancellationToken cancellationToken)
     {
-        await expenseService.DeleteAsync(id, cancellationToken);
+        await expenseService.DeleteAsync(id, httpContext.GetUserId(), cancellationToken);
         return Results.NoContent();
     }
 }

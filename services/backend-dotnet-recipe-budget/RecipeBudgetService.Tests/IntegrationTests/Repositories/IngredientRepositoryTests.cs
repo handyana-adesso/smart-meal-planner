@@ -22,11 +22,12 @@ public class IngredientRepositoryTests : IAsyncLifetime
         _dbContext = new AppDbContext(options);
         _repository = new IngredientRepository(_dbContext);
         
-        _recipe = new Recipe 
-        { 
+        _recipe = new Recipe
+        {
             Name = "Pasta",
             Description = "Delicious pasta recipe",
-            Servings = 2
+            Servings = 2,
+            UserId = Guid.NewGuid()
         };
         _dbContext.Recipes.Add(_recipe);
         await _dbContext.SaveChangesAsync();

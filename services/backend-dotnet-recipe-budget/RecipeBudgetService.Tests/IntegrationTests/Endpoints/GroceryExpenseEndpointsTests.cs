@@ -16,7 +16,7 @@ public class GroceryExpenseEndpointsTests : BaseEndpointsIntegrationTests
 
         _recipe = await SeedAsync(async db =>
         {
-            var recipe = new Recipe { Name = "Pasta", Servings = 2 };
+            var recipe = new Recipe { Name = "Pasta", Servings = 2, UserId = UserId };
             db.Recipes.Add(recipe);
             await db.SaveChangesAsync();
             return recipe;
@@ -37,7 +37,8 @@ public class GroceryExpenseEndpointsTests : BaseEndpointsIntegrationTests
                 Amount = amount,
                 Category = category,
                 Date = DateTime.UtcNow,
-                RecipeId = recipeId
+                RecipeId = recipeId,
+                UserId = UserId
             };
             db.GroceryExpenses.Add(expense);
             await db.SaveChangesAsync();

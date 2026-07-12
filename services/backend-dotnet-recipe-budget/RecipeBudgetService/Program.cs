@@ -1,5 +1,7 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RecipeBudgetService.Middleware;
 using RecipeBudgetService.Validators;
 using RecipeBudgetService.Endpoints;
@@ -8,6 +10,7 @@ using RecipeBudgetService.Application.Repositories;
 using RecipeBudgetService.Application.Services;
 using RecipeBudgetService.Infrastructure.Repositories;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,9 +27,12 @@ if (!builder.Environment.IsEnvironment("Test"))
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Registers all validators in the assembly automatically
 builder.Services.AddValidatorsFromAssemblyContaining<RecipeRequestValidator>();
@@ -36,6 +42,34 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// JWT authentication — reads config from environment variables (see .env.example)
+var jwtSecret = builder.Configuration["JWT_SECRET"]
+    ?? throw new InvalidOperationException("JWT_SECRET is not configured.");
+var jwtIssuer = builder.Configuration["JWT_ISSUER"];
+var jwtAudience = builder.Configuration["JWT_AUDIENCE"];
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Keep JWT claim types as-issued (e.g. "sub") instead of ASP.NET Core's
+        // default remapping to long ClaimTypes.* URIs.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -50,6 +84,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 // only migrate in non-test environments
 if (!app.Environment.IsEnvironment("Test"))
 {
@@ -61,6 +98,7 @@ if (!app.Environment.IsEnvironment("Test"))
 // Map health check endpoint
 app.MapHealthChecks("/health");
 
+app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
 app.MapGroceryExpenseEndpoints();

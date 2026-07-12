@@ -4,6 +4,6 @@ namespace RecipeBudgetService.Application.Services;
 
 public interface IIngredientService
 {
-    Task<IngredientResponse> CreateAsync(Guid recipeId, IngredientRequest request, CancellationToken cancellationToken);
-    Task DeleteAsync(Guid recipeId, Guid ingredientId, CancellationToken cancellationToken);
+    Task<IngredientResponse> CreateAsync(Guid recipeId, IngredientRequest request, Guid userId, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid recipeId, Guid ingredientId, Guid userId, CancellationToken cancellationToken);
 }

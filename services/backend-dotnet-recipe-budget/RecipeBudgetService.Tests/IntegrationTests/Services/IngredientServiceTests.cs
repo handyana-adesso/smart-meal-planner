@@ -15,6 +15,7 @@ public class IngredientServiceTests
     private readonly AppDbContext _dbContext;
     private readonly IngredientService _ingredientService;
     private readonly Recipe _recipe;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public IngredientServiceTests()
     {
@@ -28,7 +29,7 @@ public class IngredientServiceTests
         _ingredientService = new IngredientService(recipeRepository, ingredientRepository);
 
         // seed a recipe to work with
-        _recipe = new Recipe { Name = "Pasta", Description = "A delicious pasta", Servings = 2 };
+        _recipe = new Recipe { Name = "Pasta", Description = "A delicious pasta", Servings = 2, UserId = _userId };
         _dbContext.Recipes.Add(_recipe);
         _dbContext.SaveChanges();
     }
@@ -40,7 +41,7 @@ public class IngredientServiceTests
         var request = new IngredientRequest("Spaghetti", 200, "g", 0.01m);
 
         // Act
-        var result = await _ingredientService.CreateAsync(_recipe.Id, request, CancellationToken.None);
+        var result = await _ingredientService.CreateAsync(_recipe.Id, request, _userId, CancellationToken.None);
 
         // Assert — verify returned response
         result.Id.Should().NotBe(Guid.Empty);
@@ -57,8 +58,8 @@ public class IngredientServiceTests
     public async Task AddAsync_ShouldUpdateRecipeEstimatedCost()
     {
         // Arrange
-        await _ingredientService.CreateAsync(_recipe.Id, new IngredientRequest("Spaghetti", 200, "g", 0.01m), CancellationToken.None);
-        await _ingredientService.CreateAsync(_recipe.Id, new IngredientRequest("Eggs", 3, "pcs", 0.50m), CancellationToken.None);
+        await _ingredientService.CreateAsync(_recipe.Id, new IngredientRequest("Spaghetti", 200, "g", 0.01m), _userId, CancellationToken.None);
+        await _ingredientService.CreateAsync(_recipe.Id, new IngredientRequest("Eggs", 3, "pcs", 0.50m), _userId, CancellationToken.None);
 
         // Act — get recipe to check estimated cost
         var recipe = await _dbContext.Recipes
@@ -77,6 +78,23 @@ public class IngredientServiceTests
         var act = async () => await _ingredientService.CreateAsync(
             Guid.NewGuid(),
             new IngredientRequest("Spaghetti", 200, "g", 0.01m),
+            _userId,
+            CancellationToken.None
+        );
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("*Recipe*");
+    }
+
+    [Fact]
+    public async Task AddAsync_WhenRecipeBelongsToOtherUser_ShouldThrowNotFoundException()
+    {
+        // Act
+        var act = async () => await _ingredientService.CreateAsync(
+            _recipe.Id,
+            new IngredientRequest("Spaghetti", 200, "g", 0.01m),
+            Guid.NewGuid(),
             CancellationToken.None
         );
 
@@ -102,7 +120,7 @@ public class IngredientServiceTests
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        await _ingredientService.DeleteAsync(_recipe.Id, ingredient.Id, CancellationToken.None);
+        await _ingredientService.DeleteAsync(_recipe.Id, ingredient.Id, _userId, CancellationToken.None);
         _dbContext.ChangeTracker.Clear();
 
         // Assert
@@ -116,6 +134,32 @@ public class IngredientServiceTests
         var act = async () => await _ingredientService.DeleteAsync(
             Guid.NewGuid(),
             Guid.NewGuid(),
+            _userId,
+            CancellationToken.None
+        );
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("*Recipe*");
+    }
+
+    [Fact]
+    public async Task RemoveAsync_WhenRecipeBelongsToOtherUser_ShouldThrowNotFoundException()
+    {
+        var ingredient = new Ingredient
+        {
+            Name = "Spaghetti",
+            Quantity = 200,
+            Unit = "g",
+            PricePerUnit = 0.01m,
+            RecipeId = _recipe.Id
+        };
+        _dbContext.Ingredients.Add(ingredient);
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        var act = async () => await _ingredientService.DeleteAsync(
+            _recipe.Id,
+            ingredient.Id,
+            Guid.NewGuid(),
             CancellationToken.None
         );
         await act.Should().ThrowAsync<NotFoundException>()
@@ -128,10 +172,10 @@ public class IngredientServiceTests
         var act = async () => await _ingredientService.DeleteAsync(
             _recipe.Id,
             Guid.NewGuid(),
+            _userId,
             CancellationToken.None
         );
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage("*Ingredient*");
     }
 }
-

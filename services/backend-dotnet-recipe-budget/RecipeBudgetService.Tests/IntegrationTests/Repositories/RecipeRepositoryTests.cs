@@ -12,6 +12,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
     private readonly DbContextOptions<AppDbContext> _options;
     private AppDbContext _dbContext;
     private RecipeRepository _repository;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public RecipeRepositoryTests()
     {
@@ -31,7 +32,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
     public async Task GetAllAsync_WhenNoRecipes_ShouldReturnEmptyList()
     {
         // Act
-        var result = await _repository.GetAllAsync(CancellationToken.None);
+        var result = await _repository.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().BeEmpty();
@@ -43,23 +44,25 @@ public class RecipeRepositoryTests : IAsyncLifetime
         // Arrange
         var recipes = new List<Recipe>
         {
-            new() 
-            { 
-                Id = Guid.NewGuid(), 
-                Name = "Pasta", 
-                Description = "A delicious pasta", 
-                Servings = 1, 
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Pasta",
+                Description = "A delicious pasta",
+                Servings = 1,
+                UserId = _userId,
                 Ingredients = new List<Ingredient>
                 {
                     new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
                 }
             },
-            new() 
-            { 
-                Id = Guid.NewGuid(), 
-                Name = "Pizza", 
-                Description = "Pizza margharita", 
-                Servings = 2
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Pizza",
+                Description = "Pizza margharita",
+                Servings = 2,
+                UserId = _userId
             }
         };
 
@@ -67,10 +70,32 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllAsync(CancellationToken.None);
+        var result = await _repository.GetAllAsync(_userId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WhenRecipesBelongToOtherUser_ShouldNotReturnThem()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        _dbContext.Recipes.Add(new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            UserId = otherUserId
+        });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.GetAllAsync(_userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     [Fact]
@@ -83,6 +108,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient>
             {
                 new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
@@ -92,7 +118,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(recipe.Id, CancellationToken.None);
+        var result = await _repository.GetByIdAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -109,6 +135,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient>
             {
                 new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
@@ -118,7 +145,30 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+        var result = await _repository.GetByIdAsync(Guid.NewGuid(), _userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenRecipeBelongsToOtherUser_ShouldReturnNull()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            UserId = otherUserId
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.GetByIdAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
@@ -133,6 +183,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient>
             {
                 new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
@@ -157,6 +208,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient>
             {
                 new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m }
@@ -175,7 +227,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         };
 
         // Act
-        var result = await _repository.UpdateAsync(updatedRecipe, CancellationToken.None);
+        var result = await _repository.UpdateAsync(updatedRecipe, _userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -200,7 +252,37 @@ public class RecipeRepositoryTests : IAsyncLifetime
         };
 
         // Act
-        var result = await _repository.UpdateAsync(updatedRecipe, CancellationToken.None);
+        var result = await _repository.UpdateAsync(updatedRecipe, _userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenRecipeBelongsToOtherUser_ShouldReturnNull()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            UserId = otherUserId
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        var updatedRecipe = new Recipe
+        {
+            Id = recipe.Id,
+            Name = "Updated Pasta",
+            Description = "An updated delicious pasta",
+            Servings = 2
+        };
+
+        // Act
+        var result = await _repository.UpdateAsync(updatedRecipe, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
@@ -216,17 +298,18 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.DeleteAsync(recipe.Id, CancellationToken.None);
+        var result = await _repository.DeleteAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
-        var deleted = await _repository.GetByIdAsync(recipe.Id, CancellationToken.None);
+        var deleted = await _repository.GetByIdAsync(recipe.Id, _userId, CancellationToken.None);
         deleted.Should().BeNull();
     }
 
@@ -240,13 +323,38 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
+        var result = await _repository.DeleteAsync(Guid.NewGuid(), _userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeFalse();
+        _dbContext.Recipes.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenRecipeBelongsToOtherUser_ShouldReturnFalse()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            UserId = otherUserId
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.DeleteAsync(recipe.Id, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeFalse();
@@ -263,13 +371,14 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.ExistsByNameAsync(recipe.Name, CancellationToken.None);
+        var result = await _repository.ExistsByNameAsync(recipe.Name, _userId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -285,16 +394,39 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Name = "Pasta",
             Description = "A delicious pasta",
             Servings = 1,
+            UserId = _userId,
             Ingredients = new List<Ingredient> { new() { Id = Guid.NewGuid(), Name = "Spaghetti", Quantity = 200, Unit = "g", PricePerUnit = 0.01m } }
         };
         _dbContext.Recipes.Add(recipe);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _repository.ExistsByNameAsync("NonExistingRecipe", CancellationToken.None);
-        
+        var result = await _repository.ExistsByNameAsync("NonExistingRecipe", _userId, CancellationToken.None);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExistsByNameAsync_WhenRecipeBelongsToOtherUser_ShouldReturnFalse()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pasta",
+            Description = "A delicious pasta",
+            Servings = 1,
+            UserId = otherUserId
+        };
+        _dbContext.Recipes.Add(recipe);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.ExistsByNameAsync(recipe.Name, _userId, CancellationToken.None);
+
         // Assert
         result.Should().BeFalse();
     }
 }
-

@@ -31,7 +31,8 @@ public class IngredientEndpointsTests : BaseEndpointsIntegrationTests
             {
                 Name = name,
                 Servings = servings,
-                Ingredients = ingredients ?? []
+                Ingredients = ingredients ?? [],
+                UserId = UserId
             };
             db.Recipes.Add(recipe);
             await db.SaveChangesAsync();

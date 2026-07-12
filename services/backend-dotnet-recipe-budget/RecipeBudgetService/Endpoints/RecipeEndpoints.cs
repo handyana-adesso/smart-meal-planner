@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using RecipeBudgetService.Extensions;
 using RecipeBudgetService.Filters;
 using RecipeBudgetService.Application.DTOs;
 using RecipeBudgetService.Application.Services;
@@ -10,7 +11,8 @@ public static class RecipeEndpoints
     public static void MapRecipeEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/recipes")
-            .WithTags("Recipes");
+            .WithTags("Recipes")
+            .RequireAuthorization();
 
         group.MapPost("/", Create)
             .WithName("CreateRecipe")
@@ -46,33 +48,33 @@ public static class RecipeEndpoints
             .Produces(StatusCodes.Status204NoContent);
     }
 
-    static async Task<IResult> Create([FromServices] IRecipeService recipeService, RecipeRequest request, CancellationToken cancellationToken)
+    static async Task<IResult> Create(HttpContext httpContext, [FromServices] IRecipeService recipeService, RecipeRequest request, CancellationToken cancellationToken)
     {
-        var recipe = await recipeService.CreateAsync(request, cancellationToken);
+        var recipe = await recipeService.CreateAsync(request, httpContext.GetUserId(), cancellationToken);
         return Results.Created($"/api/recipes/{recipe.Id}", recipe);
     }
 
-    static async Task<IResult> GetAll([FromServices] IRecipeService recipeService, CancellationToken cancellationToken)
+    static async Task<IResult> GetAll(HttpContext httpContext, [FromServices] IRecipeService recipeService, CancellationToken cancellationToken)
     {
-        var recipes = await recipeService.GetAllAsync(cancellationToken);
+        var recipes = await recipeService.GetAllAsync(httpContext.GetUserId(), cancellationToken);
         return Results.Ok(recipes);
     }
 
-    static async Task<IResult> GetById([FromServices] IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
+    static async Task<IResult> GetById(HttpContext httpContext, [FromServices] IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
     {
-        var recipe = await recipeService.GetByIdAsync(id, cancellationToken);
+        var recipe = await recipeService.GetByIdAsync(id, httpContext.GetUserId(), cancellationToken);
         return Results.Ok(recipe);
     }
 
-    static async Task<IResult> Update([FromServices] IRecipeService recipeService, Guid id, RecipeRequest request, CancellationToken cancellationToken)
+    static async Task<IResult> Update(HttpContext httpContext, [FromServices] IRecipeService recipeService, Guid id, RecipeRequest request, CancellationToken cancellationToken)
     {
-        var recipe = await recipeService.UpdateAsync(id, request, cancellationToken);
+        var recipe = await recipeService.UpdateAsync(id, request, httpContext.GetUserId(), cancellationToken);
         return Results.Ok(recipe);
     }
 
-    static async Task<IResult> Delete([FromServices] IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
+    static async Task<IResult> Delete(HttpContext httpContext, [FromServices] IRecipeService recipeService, Guid id, CancellationToken cancellationToken)
     {
-        await recipeService.DeleteAsync(id, cancellationToken);
+        await recipeService.DeleteAsync(id, httpContext.GetUserId(), cancellationToken);
         return Results.NoContent();
     }
 }

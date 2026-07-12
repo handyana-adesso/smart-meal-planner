@@ -11,6 +11,7 @@ public class ExpenseRepositoryTests
     private readonly AppDbContext _dbContext;
     private readonly ExpenseRepository _repository;
     private readonly Recipe _recipe;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public ExpenseRepositoryTests()
     {
@@ -22,7 +23,7 @@ public class ExpenseRepositoryTests
         _repository = new ExpenseRepository(_dbContext);
 
         // seed a recipe for optional link
-        _recipe = new Recipe { Name = "Pasta", Servings = 2 };
+        _recipe = new Recipe { Name = "Pasta", Servings = 2, UserId = _userId };
         _dbContext.Recipes.Add(_recipe);
         _dbContext.SaveChanges();
         _dbContext.ChangeTracker.Clear();
@@ -31,7 +32,7 @@ public class ExpenseRepositoryTests
     [Fact]
     public async Task GetAllAsync_WhenNoExpenses_ShouldReturnEmptyList()
     {
-        var result = await _repository.GetAllAsync();
+        var result = await _repository.GetAllAsync(_userId);
         result.Should().BeEmpty();
     }
 
@@ -45,21 +46,23 @@ public class ExpenseRepositoryTests
                 Description = "Old expense",
                 Amount = 10.00m,
                 Category = ExpenseCategory.Groceries,
-                Date = DateTime.UtcNow.AddDays(-5)
+                Date = DateTime.UtcNow.AddDays(-5),
+                UserId = _userId
             },
             new GroceryExpense
             {
                 Description = "Recent expense",
                 Amount = 20.00m,
                 Category = ExpenseCategory.Groceries,
-                Date = DateTime.UtcNow
+                Date = DateTime.UtcNow,
+                UserId = _userId
             }
         );
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result = await _repository.GetAllAsync();
+        var result = await _repository.GetAllAsync(_userId);
 
         // Assert
         result.Should().HaveCount(2);
@@ -76,17 +79,41 @@ public class ExpenseRepositoryTests
             Amount = 20.00m,
             Category = ExpenseCategory.Groceries,
             Date = DateTime.UtcNow,
-            RecipeId = _recipe.Id
+            RecipeId = _recipe.Id,
+            UserId = _userId
         });
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result = await _repository.GetAllAsync();
+        var result = await _repository.GetAllAsync(_userId);
 
         // Assert
         result.First().Recipe.Should().NotBeNull();
         result.First().Recipe!.Name.Should().Be("Pasta");
+    }
+
+    [Fact]
+    public async Task GetAllAsync_WhenExpensesBelongToOtherUser_ShouldNotReturnThem()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        _dbContext.GroceryExpenses.Add(new GroceryExpense
+        {
+            Description = "Other user's expense",
+            Amount = 20.00m,
+            Category = ExpenseCategory.Groceries,
+            Date = DateTime.UtcNow,
+            UserId = otherUserId
+        });
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var result = await _repository.GetAllAsync(_userId);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     [Fact]
@@ -98,14 +125,15 @@ public class ExpenseRepositoryTests
             Description = "Weekly groceries",
             Amount = 50.00m,
             Category = ExpenseCategory.Groceries,
-            Date = DateTime.UtcNow
+            Date = DateTime.UtcNow,
+            UserId = _userId
         };
         _dbContext.GroceryExpenses.Add(expense);
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result = await _repository.GetByIdAsync(expense.Id);
+        var result = await _repository.GetByIdAsync(expense.Id, _userId);
 
         // Assert
         result.Should().NotBeNull();
@@ -116,7 +144,31 @@ public class ExpenseRepositoryTests
     [Fact]
     public async Task GetByIdAsync_WhenExpenseDoesNotExist_ShouldReturnNull()
     {
-        var result = await _repository.GetByIdAsync(Guid.NewGuid());
+        var result = await _repository.GetByIdAsync(Guid.NewGuid(), _userId);
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenExpenseBelongsToOtherUser_ShouldReturnNull()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var expense = new GroceryExpense
+        {
+            Description = "Weekly groceries",
+            Amount = 50.00m,
+            Category = ExpenseCategory.Groceries,
+            Date = DateTime.UtcNow,
+            UserId = otherUserId
+        };
+        _dbContext.GroceryExpenses.Add(expense);
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var result = await _repository.GetByIdAsync(expense.Id, _userId);
+
+        // Assert
         result.Should().BeNull();
     }
 
@@ -129,7 +181,8 @@ public class ExpenseRepositoryTests
             Description = "Weekly groceries",
             Amount = 50.00m,
             Category = ExpenseCategory.Groceries,
-            Date = DateTime.UtcNow
+            Date = DateTime.UtcNow,
+            UserId = _userId
         };
 
         // Act
@@ -154,7 +207,8 @@ public class ExpenseRepositoryTests
             Amount = 20.00m,
             Category = ExpenseCategory.Groceries,
             Date = DateTime.UtcNow,
-            RecipeId = _recipe.Id
+            RecipeId = _recipe.Id,
+            UserId = _userId
         };
 
         // Act
@@ -175,7 +229,8 @@ public class ExpenseRepositoryTests
             Description = "Weekly groceries",
             Amount = 50.00m,
             Category = ExpenseCategory.Groceries,
-            Date = DateTime.UtcNow
+            Date = DateTime.UtcNow,
+            UserId = _userId
         };
         _dbContext.GroceryExpenses.Add(expense);
         await _dbContext.SaveChangesAsync();
@@ -189,7 +244,7 @@ public class ExpenseRepositoryTests
             Amount = 75.00m,
             Category = ExpenseCategory.Household,
             Date = DateTime.UtcNow
-        });
+        }, _userId);
         _dbContext.ChangeTracker.Clear();
 
         // Assert
@@ -212,8 +267,39 @@ public class ExpenseRepositoryTests
             Amount = 10.00m,
             Category = ExpenseCategory.Groceries,
             Date = DateTime.UtcNow
-        });
+        }, _userId);
 
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenExpenseBelongsToOtherUser_ShouldReturnNull()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var expense = new GroceryExpense
+        {
+            Description = "Weekly groceries",
+            Amount = 50.00m,
+            Category = ExpenseCategory.Groceries,
+            Date = DateTime.UtcNow,
+            UserId = otherUserId
+        };
+        _dbContext.GroceryExpenses.Add(expense);
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var result = await _repository.UpdateAsync(new GroceryExpense
+        {
+            Id = expense.Id,
+            Description = "Updated groceries",
+            Amount = 75.00m,
+            Category = ExpenseCategory.Household,
+            Date = DateTime.UtcNow
+        }, _userId);
+
+        // Assert
         result.Should().BeNull();
     }
 
@@ -226,14 +312,15 @@ public class ExpenseRepositoryTests
             Description = "Weekly groceries",
             Amount = 50.00m,
             Category = ExpenseCategory.Groceries,
-            Date = DateTime.UtcNow
+            Date = DateTime.UtcNow,
+            UserId = _userId
         };
         _dbContext.GroceryExpenses.Add(expense);
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result = await _repository.DeleteAsync(expense.Id);
+        var result = await _repository.DeleteAsync(expense.Id, _userId);
         _dbContext.ChangeTracker.Clear();
 
         // Assert
@@ -245,7 +332,31 @@ public class ExpenseRepositoryTests
     [Fact]
     public async Task DeleteAsync_WhenExpenseDoesNotExist_ShouldReturnFalse()
     {
-        var result = await _repository.DeleteAsync(Guid.NewGuid());
+        var result = await _repository.DeleteAsync(Guid.NewGuid(), _userId);
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenExpenseBelongsToOtherUser_ShouldReturnFalse()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var expense = new GroceryExpense
+        {
+            Description = "Weekly groceries",
+            Amount = 50.00m,
+            Category = ExpenseCategory.Groceries,
+            Date = DateTime.UtcNow,
+            UserId = otherUserId
+        };
+        _dbContext.GroceryExpenses.Add(expense);
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var result = await _repository.DeleteAsync(expense.Id, _userId);
+
+        // Assert
         result.Should().BeFalse();
     }
 
@@ -259,25 +370,49 @@ public class ExpenseRepositoryTests
                 Description = "Groceries",
                 Amount = 50.00m,
                 Category = ExpenseCategory.Groceries,
-                Date = DateTime.UtcNow
+                Date = DateTime.UtcNow,
+                UserId = _userId
             },
             new GroceryExpense
             {
                 Description = "Dinner",
                 Amount = 35.00m,
                 Category = ExpenseCategory.EatingOut,
-                Date = DateTime.UtcNow
+                Date = DateTime.UtcNow,
+                UserId = _userId
             }
         );
         await _dbContext.SaveChangesAsync();
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result = await _repository.GetByCategoryAsync(ExpenseCategory.Groceries);
+        var result = await _repository.GetByCategoryAsync(ExpenseCategory.Groceries, _userId);
 
         // Assert
         result.Should().HaveCount(1);
         result.First().Category.Should().Be(ExpenseCategory.Groceries);
     }
-}
 
+    [Fact]
+    public async Task GetByCategoryAsync_WhenExpenseBelongsToOtherUser_ShouldNotReturnIt()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        _dbContext.GroceryExpenses.Add(new GroceryExpense
+        {
+            Description = "Groceries",
+            Amount = 50.00m,
+            Category = ExpenseCategory.Groceries,
+            Date = DateTime.UtcNow,
+            UserId = otherUserId
+        });
+        await _dbContext.SaveChangesAsync();
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var result = await _repository.GetByCategoryAsync(ExpenseCategory.Groceries, _userId);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+}

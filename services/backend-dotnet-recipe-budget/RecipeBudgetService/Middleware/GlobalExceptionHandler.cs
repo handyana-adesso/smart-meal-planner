@@ -19,6 +19,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
             NotFoundException => (StatusCodes.Status404NotFound, "Resource not found."),
             ValidationException => (StatusCodes.Status400BadRequest, "Validation error."),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict occurred."),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized."),
             ArgumentNullException => (StatusCodes.Status400BadRequest, "A required argument was null."),
             ArgumentException => (StatusCodes.Status400BadRequest, "An argument was invalid."),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")

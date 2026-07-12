@@ -11,15 +11,16 @@ namespace RecipeBudgetService.Application.Services;
 
 public class IngredientService(
     IRecipeRepository recipeRepository,
-    IIngredientRepository ingredientRepository) 
+    IIngredientRepository ingredientRepository)
     : IIngredientService
 {
-    public async Task<IngredientResponse> CreateAsync(Guid recipeId, IngredientRequest request, CancellationToken cancellationToken)
+    public async Task<IngredientResponse> CreateAsync(Guid recipeId, IngredientRequest request, Guid userId, CancellationToken cancellationToken)
     {
         GuardExtensions.ThrowIfGuidEmpty(recipeId);
+        GuardExtensions.ThrowIfGuidEmpty(userId);
         ArgumentNullException.ThrowIfNull(request);
 
-        var recipe = recipeRepository.GetByIdAsync(recipeId, cancellationToken).Result;
+        var recipe = await recipeRepository.GetByIdAsync(recipeId, userId, cancellationToken);
         if (recipe is null)
         {
             throw new NotFoundException($"Recipe with id {recipeId} was not found.");
@@ -32,12 +33,13 @@ public class IngredientService(
         return added.ToResponse();
     }
 
-    public async Task DeleteAsync(Guid recipeId, Guid ingredientId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid recipeId, Guid ingredientId, Guid userId, CancellationToken cancellationToken)
     {
         GuardExtensions.ThrowIfGuidEmpty(recipeId);
         GuardExtensions.ThrowIfGuidEmpty(ingredientId);
+        GuardExtensions.ThrowIfGuidEmpty(userId);
 
-        var recipe = await recipeRepository.GetByIdAsync(recipeId, cancellationToken);
+        var recipe = await recipeRepository.GetByIdAsync(recipeId, userId, cancellationToken);
         if (recipe is null)
         {
             throw new NotFoundException($"Recipe with id {recipeId} was not found.");

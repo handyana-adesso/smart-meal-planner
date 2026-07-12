@@ -14,10 +14,10 @@ public class ExpenseRepository(AppDbContext dbContext) : IExpenseRepository
         return expense;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
     {
         var expense = await dbContext.GroceryExpenses
-            .FindAsync(id, cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId, cancellationToken);
         if (expense is null)
         {
             return false;
@@ -28,34 +28,35 @@ public class ExpenseRepository(AppDbContext dbContext) : IExpenseRepository
         return true;
     }
 
-    public async Task<IList<GroceryExpense>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IList<GroceryExpense>> GetAllAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await dbContext.GroceryExpenses
             .Include(e => e.Recipe)
+            .Where(e => e.UserId == userId)
             .OrderByDescending(e => e.Date)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<GroceryExpense>> GetByCategoryAsync(ExpenseCategory category, CancellationToken cancellationToken = default)
+    public async Task<List<GroceryExpense>> GetByCategoryAsync(ExpenseCategory category, Guid userId, CancellationToken cancellationToken = default)
     {
         return await dbContext.GroceryExpenses
             .Include(e => e.Recipe)
-            .Where(e => e.Category == category)
+            .Where(e => e.Category == category && e.UserId == userId)
             .OrderByDescending(e => e.Date)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<GroceryExpense?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GroceryExpense?> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
     {
         return await dbContext.GroceryExpenses
             .Include(e => e.Recipe)
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId, cancellationToken);
     }
 
-    public async Task<GroceryExpense?> UpdateAsync(GroceryExpense expense, CancellationToken cancellationToken = default)
+    public async Task<GroceryExpense?> UpdateAsync(GroceryExpense expense, Guid userId, CancellationToken cancellationToken = default)
     {
         var existing = await dbContext.GroceryExpenses
-            .FindAsync(expense.Id, cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == expense.Id && e.UserId == userId, cancellationToken);
         if (existing is null)
         {
             return null;
