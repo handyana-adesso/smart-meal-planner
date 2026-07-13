@@ -1,0 +1,253 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+
+/* Shared layout utility classes used across feature components */
+
+/* App shell — mobile-first. Base rules target narrow viewports (burger menu,
+   sidenav navigation); the min-width breakpoint below switches to inline
+   desktop navigation once there's room for it. */
+
+.app-shell {
+  height: 100vh;
+}
+
+mat-sidenav.app-sidenav {
+  width: 240px;
+  max-width: 80vw;
+}
+
+.sidenav-link {
+  display: block;
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+
+  &.active-link {
+    background-color: var(--mat-sys-surface-container-highest);
+    font-weight: 600;
+  }
+}
+
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-nav-desktop {
+  display: none;
+}
+
+.app-title {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+button.avatar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  --mat-icon-button-state-layer-size: 32px;
+  padding: 0;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: var(--mat-sys-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-menu-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  max-width: 260px;
+  overflow-wrap: break-word;
+}
+
+.app-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  button.burger-button {
+    display: none;
+  }
+
+  .app-nav-desktop {
+    display: flex;
+    gap: 4px;
+    margin-left: 16px;
+  }
+
+  .app-content {
+    padding: 24px;
+  }
+}
+
+/* Scroll wrapper so wide tables scroll horizontally on narrow screens instead of
+   forcing display:block on the table itself, which breaks its full-width sizing. */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 48px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.ingredient-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.form-actions {
+  margin-top: 16px;
+}
+
+.inline-add-form {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.ingredient-row mat-form-field,
+.inline-add-form mat-form-field,
+.report-filters mat-form-field,
+.form-row mat-form-field {
+  flex: 1 1 140px;
+}
+
+.summary-totals {
+  margin-bottom: 16px;
+}
+
+.breakdown-row {
+  margin-bottom: 12px;
+}
+
+.breakdown-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.breakdown-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--mat-sys-surface-container-highest);
+  overflow: hidden;
+}
+
+.breakdown-bar-fill {
+  height: 100%;
+  background-color: var(--mat-sys-primary);
+}
+
+.report-filters {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.mock-data-notice {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.checked-item {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.expiring-soon {
+  color: var(--mat-sys-error);
+  font-weight: 600;
+}
+
+/* You can add global styles to this file, and also import other style files */

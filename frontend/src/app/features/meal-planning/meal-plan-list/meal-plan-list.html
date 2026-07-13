@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h1>Meal planning</h1>
+</div>
+<p class="mock-data-notice">
+  Preview data only — this screen will connect to the Java Grocery &amp; Meal Plan API once it's built.
+</p>
+
+<form [formGroup]="form" (ngSubmit)="add()" class="inline-add-form">
+  <mat-form-field appearance="outline">
+    <mat-label>Date</mat-label>
+    <input matInput type="date" formControlName="date" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Meal</mat-label>
+    <mat-select formControlName="mealType">
+      @for (type of mealTypes; track type) {
+        <mat-option [value]="type">{{ type }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Recipe / dish name</mat-label>
+    <input matInput formControlName="recipeName" />
+  </mat-form-field>
+
+  <button mat-flat-button color="primary" type="submit">
+    <mat-icon>add</mat-icon>
+    Add
+  </button>
+</form>
+
+@if (entries().length === 0) {
+  <p>No meals planned yet.</p>
+} @else {
+  <div class="table-scroll">
+    <table mat-table [dataSource]="entries()" class="full-width">
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let entry">{{ entry.date | date: 'mediumDate' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="mealType">
+        <th mat-header-cell *matHeaderCellDef>Meal</th>
+        <td mat-cell *matCellDef="let entry">{{ entry.mealType }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="recipeName">
+        <th mat-header-cell *matHeaderCellDef>Recipe</th>
+        <td mat-cell *matCellDef="let entry">{{ entry.recipeName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let entry">
+          <button mat-icon-button (click)="remove(entry)" aria-label="Remove">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+}

@@ -1,0 +1,22 @@
+<mat-card class="summary-totals">
+  <mat-card-content>
+    <p><strong>Total spent:</strong> {{ totalAmount() | currency }}</p>
+    <p><strong>Total expenses:</strong> {{ totalCount() }}</p>
+  </mat-card-content>
+</mat-card>
+
+@if (breakdowns().length === 0) {
+  <p>No expenses in this period.</p>
+} @else {
+  @for (breakdown of breakdowns(); track breakdown.category) {
+    <div class="breakdown-row">
+      <div class="breakdown-label">
+        <span>{{ breakdown.categoryName }}</span>
+        <span>{{ breakdown.totalAmount | currency }} ({{ breakdown.percentage }}%, {{ breakdown.count }} items)</span>
+      </div>
+      <div class="breakdown-bar-track">
+        <div class="breakdown-bar-fill" [style.width.%]="breakdown.percentage"></div>
+      </div>
+    </div>
+  }
+}

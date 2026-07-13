@@ -1,0 +1,9 @@
+<h1>Expense summary</h1>
+
+@if (summary(); as data) {
+  <app-breakdown-list
+    [totalAmount]="data.totalAmount"
+    [totalCount]="data.totalCount"
+    [breakdowns]="data.breakdowns"
+  />
+}

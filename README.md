@@ -57,7 +57,7 @@ flowchart TD
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white) |
+| Frontend | ![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white) ![Angular Material](https://img.shields.io/badge/Angular%20Material-22-DD0031?logo=angular&logoColor=white) |
 | .NET Backend | ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-512BD4?logo=dotnet&logoColor=white) ![EF Core](https://img.shields.io/badge/EF%20Core-10-512BD4?logo=dotnet&logoColor=white) ![FluentValidation](https://img.shields.io/badge/FluentValidation-12-FF6B6B) ![xUnit](https://img.shields.io/badge/xUnit-2.9+-512BD4) — JWT Auth + BCrypt |
 | Java Backend | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F?logo=spring&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring%20Security-6-6DB33F?logo=spring&logoColor=white) ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white) |
 | Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white) |
@@ -166,12 +166,14 @@ docker compose up --build
 |---------|-----|
 | .NET API | http://localhost:5001 |
 | .NET API Docs (Scalar) | http://localhost:5001/scalar |
+| Angular Frontend | http://localhost:4200 |
 
 ### 4. Run individual services
 
 See each service's own README for detailed run instructions:
 
 - [.NET Recipe & Budget API](./services/backend-dotnet-recipe-budget/README.md)
+- [Angular Frontend](./frontend/README.md)
 
 ---
 
@@ -184,9 +186,9 @@ dotnet test
 
 # Java Tests - TODO
 
-# Frontend Tests - TODO
-
-
+# Frontend Tests
+cd frontend
+npm test
 ```
 
 ---
@@ -197,6 +199,13 @@ dotnet test
 
 Manages recipes, ingredients and estimated costs.
 -> [Full documentation](./services/backend-dotnet-recipe-budget/README.md)
+
+### Angular Frontend
+
+Recipe, expense, report, and auth screens are wired to the live .NET API.
+Meal planning, grocery list, and pantry inventory screens use mock data until
+the Java service exists.
+-> [Full documentation](./frontend/README.md)
 
 ---
 
@@ -209,7 +218,7 @@ volumes:
   postgres_data:      # <-- Recipe & Budget data
 ```
 
-A second named volume for the Java service's database will be added once that service's Docker Compose config is built (Week 2).
+A second named volume for the Java service's database will be added once that service's Docker Compose config is built (Week 3).
 
 | Command | Effect |
 |---------|--------|
@@ -224,7 +233,7 @@ A second named volume for the Java service's database will be added once that se
 |---------|--------|
 | .NET Recipe & Budget API | 🟢 In progress (JWT auth complete) |
 | Java Grocery & Meal Plan API | 🔴 Not started |
-| Angular Frontend | 🔴 Not started |
+| Angular Frontend | 🟢 In progress (Recipes/Expenses/Reports/Auth live; Meal Planning/Grocery List/Pantry use mock data) |
 
 ---
 

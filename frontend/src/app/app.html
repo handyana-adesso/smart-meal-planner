@@ -1,0 +1,49 @@
+<mat-sidenav-container class="app-shell">
+  <mat-sidenav #drawer mode="over" class="app-sidenav">
+    <nav>
+      @for (link of navLinks; track link.path) {
+        <a class="sidenav-link" [routerLink]="link.path" routerLinkActive="active-link" (click)="drawer.close()">
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="app-toolbar">
+      @if (isAuthenticated()) {
+        <button mat-icon-button class="burger-button" (click)="drawer.toggle()" aria-label="Open menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+
+      <span class="app-title">Smart Meal Planner</span>
+
+      @if (isAuthenticated()) {
+        <nav class="app-nav-desktop">
+          @for (link of navLinks; track link.path) {
+            <a mat-button [routerLink]="link.path" routerLinkActive="active-link">{{ link.label }}</a>
+          }
+        </nav>
+
+        <span class="toolbar-spacer"></span>
+
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-button" aria-label="Account menu">
+          <span class="avatar">{{ initials() }}</span>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <div class="user-menu-header">{{ currentUser()?.email }}</div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      }
+    </mat-toolbar>
+
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -37,14 +37,14 @@ services/backend-java-grocery-meal-plan/**/out/
 # ============================================================
 # Angular / Node
 # ============================================================
-frontend-angular-dashboard/node_modules/
-frontend-angular-dashboard/dist/
-frontend-angular-dashboard/.angular/
-frontend-angular-dashboard/.sass-cache/
-frontend-angular-dashboard/connect.lock
-frontend-angular-dashboard/coverage/
-frontend-angular-dashboard/*.js.map
-frontend-angular-dashboard/.npmrc
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/coverage/
+frontend/*.js.map
+frontend/.npmrc
 
 # ============================================================
 # Docker
